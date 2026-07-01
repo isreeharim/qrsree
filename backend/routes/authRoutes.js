@@ -15,6 +15,16 @@ const loginLimiter = rateLimit({
   legacyHeaders: false,
 });
 
+router.get('/debug', (req, res) => {
+  res.json({
+    hasMongoUri: !!process.env.MONGO_URI,
+    hasJwtSecret: !!process.env.JWT_SECRET,
+    hasClientUrl: !!process.env.CLIENT_URL,
+    hasPublicBaseUrl: !!process.env.PUBLIC_BASE_URL,
+    nodeEnv: process.env.NODE_ENV,
+  });
+});
+
 router.post('/register', loginLimiter, registerRules, validate, register);
 router.post('/login', loginLimiter, loginRules, validate, login);
 router.get('/me', protect, getMe);
