@@ -39,15 +39,15 @@ export default function Login() {
       <div className="absolute -bottom-24 -left-24 h-72 w-72 rounded-full bg-sky-500/10 blur-3xl" aria-hidden="true" />
 
       <div className="relative w-full max-w-sm animate-slide-up">
-        <div className="mb-8 flex flex-col items-center">
-          <div className="grid grid-cols-3 gap-[3px] h-10 w-10 mb-4">
+        <Link to="/" className="mb-8 flex flex-col items-center group cursor-pointer">
+          <div className="grid grid-cols-3 gap-[3px] h-10 w-10 mb-4 group-hover:scale-105 transition-transform">
             {[1, 0, 1, 0, 1, 1, 1, 0, 1].map((filled, i) => (
               <span key={i} className={`rounded-sm ${filled ? 'bg-teal-500' : 'bg-transparent'}`} />
             ))}
           </div>
-          <h1 className="font-display text-xl font-semibold text-white">QR Manager</h1>
-          <p className="mt-1 text-sm text-slate-400">Sign in to manage your dynamic QR codes</p>
-        </div>
+          <h1 className="font-display text-xl font-semibold text-white group-hover:text-teal-400 transition-colors">QR Manager</h1>
+          <p className="mt-1 text-sm text-slate-400 group-hover:text-slate-300 transition-colors">Sign in to manage your dynamic QR codes</p>
+        </Link>
 
         <form
           onSubmit={handleSubmit}
