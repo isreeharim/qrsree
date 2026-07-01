@@ -112,15 +112,22 @@ export default function Register() {
               </label>
               <div className="relative mt-1.5">
                 <Briefcase className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-500" />
-                <input
+                <select
                   id="department"
-                  type="text"
                   required
                   value={department}
                   onChange={(e) => setDepartment(e.target.value)}
-                  className="w-full rounded-lg border border-navy-600 bg-navy-800 py-2 pl-9 pr-3 text-sm text-white placeholder:text-slate-500 focus:border-teal-500"
-                  placeholder="e.g. Sales, Marketing"
-                />
+                  className="w-full rounded-lg border border-navy-600 bg-navy-800 py-2 pl-9 pr-3 text-sm text-white focus:border-teal-500 cursor-pointer focus:outline-none"
+                >
+                  <option value="" disabled className="text-slate-500 bg-navy-900">Select Department</option>
+                  <option value="Sales" className="bg-navy-900 text-white">Sales</option>
+                  <option value="Marketing" className="bg-navy-900 text-white">Marketing</option>
+                  <option value="Operations" className="bg-navy-900 text-white">Operations</option>
+                  <option value="Finance" className="bg-navy-900 text-white">Finance</option>
+                  <option value="Human Resources" className="bg-navy-900 text-white">Human Resources</option>
+                  <option value="IT & Development" className="bg-navy-900 text-white">IT & Development</option>
+                  <option value="Management" className="bg-navy-900 text-white">Management</option>
+                </select>
               </div>
             </div>
 
