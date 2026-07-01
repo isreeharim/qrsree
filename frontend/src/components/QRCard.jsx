@@ -7,7 +7,7 @@ export default function QRCard({ qr, onEdit, onDelete }) {
     <div className="group relative flex flex-col rounded-2xl border border-slate-200 dark:border-navy-700 bg-white dark:bg-navy-800 p-5 shadow-sm hover:shadow-md hover:border-teal-500/40 transition-all">
       <Link to={`/qrcodes/${qr.id}`} className="flex gap-4">
         <div className="flex-shrink-0 rounded-lg bg-white p-2 ring-1 ring-slate-200 h-fit">
-          <QRCodeCanvas value={qr.shortUrl} size={56} level="M" />
+          <QRCodeCanvas value={qr.shortUrl} size={56} level="M" pixelRatio={1} />
         </div>
 
         <div className="min-w-0 flex-1">

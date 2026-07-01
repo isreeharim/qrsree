@@ -23,7 +23,7 @@ export default function QRCodeDisplay({ shortUrl, title, size = 180 }) {
         ref={wrapperRef}
         className="rounded-xl bg-white p-3 shadow-sm ring-1 ring-slate-200"
       >
-        <QRCodeCanvas value={shortUrl} size={size} level="M" includeMargin={false} />
+        <QRCodeCanvas value={shortUrl} size={size} level="M" includeMargin={false} pixelRatio={1} />
       </div>
       <button
         type="button"
