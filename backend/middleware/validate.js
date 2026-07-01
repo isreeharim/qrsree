@@ -61,9 +61,20 @@ const scanLocationRules = [
     .withMessage('Longitude must be a number between -180 and 180'),
 ];
 
+const registerRules = [
+  body('username').trim().notEmpty().withMessage('Username is required')
+    .isLength({ min: 3 }).withMessage('Username must be at least 3 characters'),
+  body('email').trim().notEmpty().withMessage('Email is required')
+    .isEmail().withMessage('Must be a valid email'),
+  body('password').notEmpty().withMessage('Password is required')
+    .isLength({ min: 6 }).withMessage('Password must be at least 6 characters'),
+  body('department').trim().notEmpty().withMessage('Department is required'),
+];
+
 module.exports = {
   validate,
   loginRules,
+  registerRules,
   createQrRules,
   updateQrRules,
   scanLocationRules,

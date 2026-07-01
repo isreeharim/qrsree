@@ -202,16 +202,16 @@ const updateScanLocation = asyncHandler(async (req, res) => {
   res.status(200).json({ success: true });
 });
 
-/**
- * GET /api/qrcodes/:id/scans
- * Admin-only scan history for a single QR code, most recent first.
- */
 const getScanHistory = asyncHandler(async (req, res) => {
   const { id } = req.params;
   const limit = Math.min(parseInt(req.query.limit, 10) || 100, 500);
 
   const qr = await QRCode.findById(id);
   if (!qr) throw new AppError('QR code not found', 404);
+
+  if (req.user.role !== 'admin' && qr.createdBy.toString() !== req.user._id.toString()) {
+    throw new AppError('Not authorized to access this QR code scans', 403);
+  }
 
   const scans = await ScanLog.find({ qrCode: id }).sort({ timestamp: -1 }).limit(limit);
 

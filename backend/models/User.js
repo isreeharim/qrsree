@@ -11,11 +11,28 @@ const userSchema = new mongoose.Schema(
       lowercase: true,
       minlength: [3, 'Username must be at least 3 characters'],
     },
+    email: {
+      type: String,
+      required: [true, 'Email is required'],
+      unique: true,
+      trim: true,
+      lowercase: true,
+    },
     password: {
       type: String,
       required: [true, 'Password is required'],
       minlength: [6, 'Password must be at least 6 characters'],
       select: false, // never return password by default
+    },
+    role: {
+      type: String,
+      enum: ['admin', 'user'],
+      default: 'user',
+    },
+    department: {
+      type: String,
+      required: [true, 'Department is required'],
+      trim: true,
     },
   },
   { timestamps: true }

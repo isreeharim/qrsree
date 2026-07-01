@@ -19,6 +19,15 @@ export function AuthProvider({ children }) {
     return data.user;
   }, []);
 
+  const register = useCallback(async (username, email, password) => {
+    const data = await authApi.register(username, email, password);
+    localStorage.setItem('qr_admin_token', data.token);
+    localStorage.setItem('qr_admin_user', JSON.stringify(data.user));
+    setToken(data.token);
+    setUser(data.user);
+    return data.user;
+  }, []);
+
   const logout = useCallback(() => {
     localStorage.removeItem('qr_admin_token');
     localStorage.removeItem('qr_admin_user');
@@ -27,8 +36,16 @@ export function AuthProvider({ children }) {
   }, []);
 
   const value = useMemo(
-    () => ({ user, token, isAuthenticated: Boolean(token), login, logout }),
-    [user, token, login, logout]
+    () => ({
+      user,
+      token,
+      isAuthenticated: Boolean(token),
+      isAdmin: user?.role === 'admin',
+      login,
+      register,
+      logout,
+    }),
+    [user, token, login, register, logout]
   );
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

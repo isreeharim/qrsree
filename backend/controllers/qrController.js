@@ -21,6 +21,7 @@ function serializeQr(qr) {
     shortUrl: buildShortUrl(qr.shortCode),
     destinationUrl: qr.destinationUrl,
     scanCount: qr.scanCount,
+    createdBy: qr.createdBy,
     createdAt: qr.createdAt,
     updatedAt: qr.updatedAt,
   };
@@ -36,42 +37,54 @@ const createQr = asyncHandler(async (req, res) => {
 
   const shortCode = await generateUniqueShortCode();
 
-  const qr = await QRCode.create({ title, destinationUrl, shortCode });
+  const qr = await QRCode.create({
+    title,
+    destinationUrl,
+    shortCode,
+    createdBy: req.user._id,
+  });
 
   res.status(201).json({ success: true, data: serializeQr(qr) });
 });
 
 /**
  * GET /api/qrcodes
- * Returns all QR codes, most recently created first.
+ * Returns all QR codes, most recently created first. Scoped by user unless admin.
  */
 const getAllQr = asyncHandler(async (req, res) => {
-  const qrs = await QRCode.find().sort({ createdAt: -1 });
+  const filter = req.user.role === 'admin' ? {} : { createdBy: req.user._id };
+  const qrs = await QRCode.find(filter).populate('createdBy', 'username email').sort({ createdAt: -1 });
   res.status(200).json({ success: true, data: qrs.map(serializeQr) });
 });
 
 /**
  * GET /api/qrcodes/:id
- * Returns a single QR code by its Mongo _id.
+ * Returns a single QR code by its Mongo _id. Scoped by ownership.
  */
 const getQrById = asyncHandler(async (req, res) => {
   const qr = await QRCode.findById(req.params.id);
   if (!qr) throw new AppError('QR code not found', 404);
+
+  if (req.user.role !== 'admin' && qr.createdBy.toString() !== req.user._id.toString()) {
+    throw new AppError('Not authorized to access this QR code', 403);
+  }
 
   res.status(200).json({ success: true, data: serializeQr(qr) });
 });
 
 /**
  * PUT /api/qrcodes/:id
- * Updates the title and/or destination URL. The short code and the
- * printed QR image are never changed, which is the entire point of the
- * system — the destination can move without reprinting anything.
+ * Updates the title and/or destination URL. Scoped by ownership.
  */
 const updateQr = asyncHandler(async (req, res) => {
   const { title, destinationUrl } = req.body;
 
   const qr = await QRCode.findById(req.params.id);
   if (!qr) throw new AppError('QR code not found', 404);
+
+  if (req.user.role !== 'admin' && qr.createdBy.toString() !== req.user._id.toString()) {
+    throw new AppError('Not authorized to access this QR code', 403);
+  }
 
   if (title !== undefined) qr.title = title;
   if (destinationUrl !== undefined) qr.destinationUrl = destinationUrl;
@@ -83,12 +96,15 @@ const updateQr = asyncHandler(async (req, res) => {
 
 /**
  * DELETE /api/qrcodes/:id
- * Deletes a QR code and all of its associated scan logs, so we don't
- * leave orphaned analytics data behind.
+ * Deletes a QR code and all of its associated scan logs. Scoped by ownership.
  */
 const deleteQr = asyncHandler(async (req, res) => {
   const qr = await QRCode.findById(req.params.id);
   if (!qr) throw new AppError('QR code not found', 404);
+
+  if (req.user.role !== 'admin' && qr.createdBy.toString() !== req.user._id.toString()) {
+    throw new AppError('Not authorized to access this QR code', 403);
+  }
 
   await ScanLog.deleteMany({ qrCode: qr._id });
   await qr.deleteOne();

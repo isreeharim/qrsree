@@ -2,6 +2,7 @@ export default function StatCard({ label, value, icon: Icon, accent = 'teal' }) 
   const accentClasses = {
     teal: 'bg-teal-500/10 text-teal-500',
     sky: 'bg-sky-500/10 text-sky-500',
+    purple: 'bg-purple-500/10 text-purple-500',
   };
 
   return (

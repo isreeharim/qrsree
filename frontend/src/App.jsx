@@ -1,14 +1,22 @@
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
-import { AuthProvider } from './context/AuthContext';
+import { AuthProvider, useAuth } from './context/AuthContext';
 import { ThemeProvider } from './context/ThemeContext';
 import { ToastProvider } from './context/ToastContext';
 import ProtectedRoute from './components/ProtectedRoute';
 import Layout from './components/Layout';
 import Login from './pages/Login';
+import Register from './pages/Register';
 import Dashboard from './pages/Dashboard';
 import QRList from './pages/QRList';
 import QRDetail from './pages/QRDetail';
+import UserList from './pages/UserList';
+import UserDetail from './pages/UserDetail';
 import NotFound from './pages/NotFound';
+
+function AdminRoute({ children }) {
+  const { isAdmin } = useAuth();
+  return isAdmin ? children : <Navigate to="/dashboard" replace />;
+}
 
 export default function App() {
   return (
@@ -19,6 +27,7 @@ export default function App() {
             <Routes>
               <Route path="/" element={<Navigate to="/dashboard" replace />} />
               <Route path="/login" element={<Login />} />
+              <Route path="/register" element={<Register />} />
 
               <Route
                 path="/dashboard"
@@ -49,6 +58,32 @@ export default function App() {
                     <Layout>
                       <QRDetail />
                     </Layout>
+                  </ProtectedRoute>
+                }
+              />
+
+              <Route
+                path="/users"
+                element={
+                  <ProtectedRoute>
+                    <AdminRoute>
+                      <Layout>
+                        <UserList />
+                      </Layout>
+                    </AdminRoute>
+                  </ProtectedRoute>
+                }
+              />
+
+              <Route
+                path="/users/:id"
+                element={
+                  <ProtectedRoute>
+                    <AdminRoute>
+                      <Layout>
+                        <UserDetail />
+                      </Layout>
+                    </AdminRoute>
                   </ProtectedRoute>
                 }
               />

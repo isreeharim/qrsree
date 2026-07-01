@@ -25,6 +25,12 @@ const qrCodeSchema = new mongoose.Schema(
       default: 0,
       min: 0,
     },
+    createdBy: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'User',
+      required: true,
+      index: true,
+    },
   },
   { timestamps: true } // createdAt, updatedAt
 );

@@ -1,14 +1,15 @@
 import { NavLink } from 'react-router-dom';
-import { LayoutDashboard, QrCode, LogOut, X } from 'lucide-react';
+import { LayoutDashboard, QrCode, Users, LogOut, X } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 
-const navItems = [
-  { to: '/dashboard', label: 'Dashboard', icon: LayoutDashboard },
-  { to: '/qrcodes', label: 'QR Codes', icon: QrCode },
-];
-
 export default function Sidebar({ open, onClose }) {
-  const { user, logout } = useAuth();
+  const { user, isAdmin, logout } = useAuth();
+
+  const navItems = [
+    { to: '/dashboard', label: 'Dashboard', icon: LayoutDashboard },
+    { to: '/qrcodes', label: 'QR Codes', icon: QrCode },
+    ...(isAdmin ? [{ to: '/users', label: 'Users', icon: Users }] : []),
+  ];
 
   return (
     <>

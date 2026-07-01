@@ -1,10 +1,11 @@
 import { useState, useEffect, useCallback } from 'react';
 import { Link } from 'react-router-dom';
-import { QrCode, ScanLine, MapPin } from 'lucide-react';
+import { QrCode, ScanLine, MapPin, Users } from 'lucide-react';
 import { getDashboardStats } from '../api/dashboard';
 import StatCard from '../components/StatCard';
 import Loader from '../components/Loader';
 import { useToast } from '../context/ToastContext';
+import { useAuth } from '../context/AuthContext';
 
 function formatTimestamp(ts) {
   return new Date(ts).toLocaleString(undefined, {
@@ -17,6 +18,7 @@ export default function Dashboard() {
   const [stats, setStats] = useState(null);
   const [loading, setLoading] = useState(true);
   const toast = useToast();
+  const { isAdmin } = useAuth();
 
   const loadStats = useCallback(async () => {
     try {
@@ -43,9 +45,27 @@ export default function Dashboard() {
 
   return (
     <div className="animate-fade-in space-y-6">
-      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-        <StatCard label="Total QR codes" value={stats.totalQrCodes} icon={QrCode} accent="teal" />
-        <StatCard label="Total scans" value={stats.totalScans} icon={ScanLine} accent="sky" />
+      <div className={`grid grid-cols-1 gap-4 ${isAdmin ? 'sm:grid-cols-3' : 'sm:grid-cols-2'}`}>
+        <StatCard
+          label={isAdmin ? 'Total QR codes' : 'My QR codes'}
+          value={stats.totalQrCodes}
+          icon={QrCode}
+          accent="teal"
+        />
+        <StatCard
+          label={isAdmin ? 'Total scans' : 'My scans'}
+          value={stats.totalScans}
+          icon={ScanLine}
+          accent="sky"
+        />
+        {isAdmin && stats.totalUsers !== undefined && (
+          <StatCard
+            label="Total users"
+            value={stats.totalUsers}
+            icon={Users}
+            accent="purple"
+          />
+        )}
       </div>
 
       <div className="rounded-2xl border border-slate-200 dark:border-navy-700 bg-white dark:bg-navy-800 shadow-sm">

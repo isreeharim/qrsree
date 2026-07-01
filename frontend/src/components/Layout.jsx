@@ -6,11 +6,13 @@ import Navbar from './Navbar';
 const titles = {
   '/dashboard': 'Dashboard',
   '/qrcodes': 'QR Codes',
+  '/users': 'User Management',
 };
 
 function resolveTitle(pathname) {
   if (titles[pathname]) return titles[pathname];
   if (pathname.startsWith('/qrcodes/')) return 'QR Code Details';
+  if (pathname.startsWith('/users/')) return 'User Details';
   return 'QR Manager';
 }
 

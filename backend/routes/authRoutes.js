@@ -1,12 +1,12 @@
 const express = require('express');
 const rateLimit = require('express-rate-limit');
-const { login, getMe } = require('../controllers/authController');
-const { loginRules, validate } = require('../middleware/validate');
+const { login, getMe, register } = require('../controllers/authController');
+const { loginRules, registerRules, validate } = require('../middleware/validate');
 const { protect } = require('../middleware/auth');
 
 const router = express.Router();
 
-// Slows down brute-force login attempts without affecting normal use.
+// Slows down brute-force login/register attempts without affecting normal use.
 const loginLimiter = rateLimit({
   windowMs: 15 * 60 * 1000, // 15 minutes
   max: 20,
@@ -15,6 +15,7 @@ const loginLimiter = rateLimit({
   legacyHeaders: false,
 });
 
+router.post('/register', loginLimiter, registerRules, validate, register);
 router.post('/login', loginLimiter, loginRules, validate, login);
 router.get('/me', protect, getMe);
 
