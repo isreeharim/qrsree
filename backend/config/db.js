@@ -2,8 +2,14 @@ const mongoose = require('mongoose');
 const dns = require('dns');
 
 // Some ISP/router DNS servers block SRV record queries needed by MongoDB Atlas.
-// Force Google's public DNS to ensure reliable hostname resolution.
-dns.setServers(['8.8.8.8', '8.8.4.4']);
+// Force Google's public DNS to ensure reliable hostname resolution locally.
+if (!process.env.VERCEL) {
+  try {
+    dns.setServers(['8.8.8.8', '8.8.4.4']);
+  } catch (err) {
+    console.warn('[db] Failed to set custom DNS servers:', err.message);
+  }
+}
 
 /**
  * Connects to MongoDB Atlas using the connection string in MONGO_URI.
