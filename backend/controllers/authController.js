@@ -48,28 +48,35 @@ const register = asyncHandler(async (req, res) => {
  * POST /api/auth/login
  * Authenticates a user and returns a JWT + profile info.
  */
-const login = asyncHandler(async (req, res) => {
+const login = asyncHandler(async (req, res, next) => {
   const { username, password } = req.body;
+  try {
+    const user = await User.findOne({ username: username.toLowerCase() }).select('+password');
 
-  const user = await User.findOne({ username: username.toLowerCase() }).select('+password');
+    if (!user || !(await user.comparePassword(password))) {
+      throw new AppError('Invalid username or password', 401);
+    }
 
-  if (!user || !(await user.comparePassword(password))) {
-    throw new AppError('Invalid username or password', 401);
+    const token = generateToken(user);
+
+    res.status(200).json({
+      success: true,
+      token,
+      user: {
+        id: user._id,
+        username: user.username,
+        email: user.email,
+        role: user.role,
+        department: user.department,
+      },
+    });
+  } catch (err) {
+    res.status(500).json({
+      success: false,
+      message: 'Login runtime error: ' + err.message,
+      stack: err.stack,
+    });
   }
-
-  const token = generateToken(user);
-
-  res.status(200).json({
-    success: true,
-    token,
-    user: {
-      id: user._id,
-      username: user.username,
-      email: user.email,
-      role: user.role,
-      department: user.department,
-    },
-  });
 });
 
 /**
