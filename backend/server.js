@@ -24,9 +24,12 @@ app.use(
     contentSecurityPolicy: false,
   })
 );
+const clientUrl = (process.env.CLIENT_URL || '').replace(/\/+$/, '');
+const allowedOrigins = clientUrl ? [clientUrl, `${clientUrl}/`] : '*';
+
 app.use(
   cors({
-    origin: process.env.CLIENT_URL || '*',
+    origin: allowedOrigins,
     credentials: true,
   })
 );
