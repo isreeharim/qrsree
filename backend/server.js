@@ -53,14 +53,17 @@ app.use('/', publicRoutes);
 app.use(notFound);
 app.use(errorHandler);
 
-// --- Startup -----------------------------------------------------------------
+// --- Startup & DB Connection --------------------------------------------------
 const PORT = process.env.PORT || 5000;
 
-connectDB().then(() => {
+// Initialize database connection in background (Mongoose buffers queries)
+connectDB();
+
+if (!process.env.VERCEL) {
   app.listen(PORT, () => {
     console.log(`[server] Listening on port ${PORT} (${process.env.NODE_ENV || 'development'})`);
   });
-});
+}
 
 // Surface unhandled promise rejections instead of failing silently.
 process.on('unhandledRejection', (err) => {
