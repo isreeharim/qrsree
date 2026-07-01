@@ -124,7 +124,7 @@ export default function Home() {
                 <div className="space-y-3">
                   <div className="text-xs text-slate-400">Current Destination:</div>
                   <div className="bg-navy-900 border border-navy-800 rounded-xl p-3 text-xs font-mono truncate text-sky-400">
-                    https://myshop.com/new-promo
+                    https://qr.sreeharim.site/
                   </div>
                   
                   <div className="flex justify-center">
