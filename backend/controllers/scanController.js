@@ -147,210 +147,152 @@ function renderDisabledPage() {
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>QR Code Disabled</title>
+<title>QR Code Inactive</title>
 <style>
   *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
 
   html, body {
     height: 100%;
-    overflow: hidden;
-    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Inter, system-ui, sans-serif;
-    -webkit-font-smoothing: antialiased;
-  }
-
-  body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    background-color: #090d16;
+    color: #f3f4f6;
     display: flex;
     align-items: center;
     justify-content: center;
-    background: #060d19;
-    background-image:
-      radial-gradient(ellipse 80% 60% at 50% 0%, rgba(99,102,241,0.12) 0%, transparent 60%),
-      radial-gradient(ellipse 60% 50% at 80% 100%, rgba(244,63,94,0.08) 0%, transparent 50%),
-      radial-gradient(ellipse 50% 40% at 10% 60%, rgba(14,165,233,0.06) 0%, transparent 50%);
-    padding: 24px;
+    -webkit-font-smoothing: antialiased;
   }
 
-  /* Floating particles */
-  .particles {
-    position: fixed; inset: 0; pointer-events: none; overflow: hidden; z-index: 0;
-  }
-  .particle {
+  /* Sleek, human-engineered grid background reminiscent of developer tools */
+  .grid-bg {
     position: absolute;
-    border-radius: 50%;
-    opacity: 0;
-    animation: float linear infinite;
-  }
-  .particle:nth-child(1)  { width:3px;height:3px;left:12%;background:rgba(99,102,241,0.4);animation-duration:18s;animation-delay:0s; }
-  .particle:nth-child(2)  { width:2px;height:2px;left:28%;background:rgba(244,63,94,0.35);animation-duration:22s;animation-delay:3s; }
-  .particle:nth-child(3)  { width:4px;height:4px;left:45%;background:rgba(14,165,233,0.3);animation-duration:16s;animation-delay:1s; }
-  .particle:nth-child(4)  { width:2px;height:2px;left:62%;background:rgba(168,85,247,0.35);animation-duration:20s;animation-delay:5s; }
-  .particle:nth-child(5)  { width:3px;height:3px;left:78%;background:rgba(244,63,94,0.3);animation-duration:24s;animation-delay:2s; }
-  .particle:nth-child(6)  { width:2px;height:2px;left:90%;background:rgba(99,102,241,0.25);animation-duration:19s;animation-delay:4s; }
-  .particle:nth-child(7)  { width:3px;height:3px;left:35%;background:rgba(14,165,233,0.3);animation-duration:21s;animation-delay:6s; }
-  .particle:nth-child(8)  { width:2px;height:2px;left:55%;background:rgba(168,85,247,0.25);animation-duration:17s;animation-delay:1s; }
-
-  @keyframes float {
-    0%   { transform: translateY(110vh) scale(0); opacity: 0; }
-    10%  { opacity: 1; }
-    90%  { opacity: 1; }
-    100% { transform: translateY(-10vh) scale(1); opacity: 0; }
+    inset: 0;
+    background-size: 24px 24px;
+    background-image: linear-gradient(to right, rgba(255, 255, 255, 0.02) 1px, transparent 1px),
+                      linear-gradient(to bottom, rgba(255, 255, 255, 0.02) 1px, transparent 1px);
+    z-index: 0;
+    pointer-events: none;
   }
 
-  /* Card */
-  .card {
-    position: relative; z-index: 1;
-    max-width: 420px; width: 100%;
-    padding: 48px 36px;
-    text-align: center;
-    border-radius: 24px;
-    background: rgba(15, 23, 42, 0.6);
-    backdrop-filter: blur(24px) saturate(140%);
-    -webkit-backdrop-filter: blur(24px) saturate(140%);
-    border: 1px solid rgba(255,255,255,0.06);
-    box-shadow:
-      0 0 0 1px rgba(255,255,255,0.03),
-      0 25px 50px -12px rgba(0,0,0,0.5),
-      0 0 80px rgba(244,63,94,0.06);
-    animation: cardIn 0.8s cubic-bezier(0.16, 1, 0.3, 1) both;
+  /* Subtle vignette */
+  .radial-overlay {
+    position: absolute;
+    inset: 0;
+    background: radial-gradient(circle at 50% 50%, transparent 20%, #090d16 80%);
+    z-index: 1;
+    pointer-events: none;
   }
 
-  @keyframes cardIn {
-    from { opacity: 0; transform: translateY(30px) scale(0.96); }
-    to   { opacity: 1; transform: translateY(0) scale(1); }
-  }
-
-  /* Shield icon */
-  .icon-wrap {
-    width: 80px; height: 80px;
-    margin: 0 auto 28px;
-    border-radius: 50%;
-    display: flex; align-items: center; justify-content: center;
-    background: linear-gradient(135deg, rgba(244,63,94,0.15), rgba(239,68,68,0.08));
-    border: 1px solid rgba(244,63,94,0.2);
-    animation: iconIn 0.6s 0.3s cubic-bezier(0.16, 1, 0.3, 1) both;
+  /* Content wrapper */
+  .container {
     position: relative;
-  }
-  .icon-wrap::before {
-    content: '';
-    position: absolute; inset: -4px;
-    border-radius: 50%;
-    border: 2px solid rgba(244,63,94,0.12);
-    animation: pulse-ring 3s ease-in-out infinite;
+    z-index: 2;
+    max-width: 440px;
+    width: 100%;
+    padding: 0 24px;
   }
 
-  @keyframes iconIn {
-    from { opacity: 0; transform: scale(0.5) rotate(-10deg); }
-    to   { opacity: 1; transform: scale(1) rotate(0); }
+  /* Sleek panel with fine border lines */
+  .panel {
+    background-color: #111726;
+    border: 1px solid #1f293d;
+    border-radius: 16px;
+    padding: 40px 32px;
+    text-align: center;
+    box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.5), 
+                0 8px 10px -6px rgba(0, 0, 0, 0.5);
   }
 
-  @keyframes pulse-ring {
-    0%, 100% { transform: scale(1); opacity: 0.5; }
-    50%      { transform: scale(1.15); opacity: 0; }
-  }
-
-  .icon-wrap svg {
-    width: 36px; height: 36px;
-    color: #f43f5e;
-    filter: drop-shadow(0 0 8px rgba(244,63,94,0.4));
-  }
-
-  /* Text */
-  h1 {
-    font-size: 22px; font-weight: 700;
-    letter-spacing: -0.02em;
-    color: #f1f5f9;
-    margin-bottom: 12px;
-    animation: textIn 0.6s 0.45s cubic-bezier(0.16, 1, 0.3, 1) both;
-  }
-
-  .subtitle {
-    font-size: 15px; line-height: 1.6;
-    color: #94a3b8;
-    margin-bottom: 32px;
-    animation: textIn 0.6s 0.55s cubic-bezier(0.16, 1, 0.3, 1) both;
-  }
-
-  @keyframes textIn {
-    from { opacity: 0; transform: translateY(12px); }
-    to   { opacity: 1; transform: translateY(0); }
-  }
-
-  /* Divider */
-  .divider {
-    width: 48px; height: 2px; margin: 0 auto 24px;
-    border-radius: 2px;
-    background: linear-gradient(90deg, transparent, rgba(244,63,94,0.5), transparent);
-    animation: textIn 0.6s 0.6s cubic-bezier(0.16, 1, 0.3, 1) both;
-  }
-
-  /* Footer note */
-  .footer {
-    font-size: 12px; color: #475569;
-    animation: textIn 0.6s 0.7s cubic-bezier(0.16, 1, 0.3, 1) both;
-    display: flex; align-items: center; justify-content: center; gap: 6px;
-  }
-  .footer svg { width: 14px; height: 14px; color: #64748b; }
-
-  /* Status pill */
-  .status {
-    display: inline-flex; align-items: center; gap: 6px;
-    padding: 6px 16px;
-    border-radius: 999px;
-    background: rgba(244,63,94,0.1);
-    border: 1px solid rgba(244,63,94,0.2);
-    font-size: 12px; font-weight: 600;
-    color: #fb7185;
-    text-transform: uppercase;
-    letter-spacing: 0.08em;
+  /* Custom broken link icon with crisp red/amber accent */
+  .icon-container {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 56px;
+    height: 56px;
+    border-radius: 12px;
+    background-color: rgba(239, 68, 68, 0.08);
+    border: 1px solid rgba(239, 68, 68, 0.2);
     margin-bottom: 24px;
-    animation: textIn 0.6s 0.5s cubic-bezier(0.16, 1, 0.3, 1) both;
   }
+
+  .icon-container svg {
+    width: 24px;
+    height: 24px;
+    color: #ef4444;
+  }
+
+  /* Clean typography, high contrast */
+  h1 {
+    font-size: 20px;
+    font-weight: 600;
+    letter-spacing: -0.01em;
+    color: #f9fafb;
+    margin-bottom: 12px;
+  }
+
+  p {
+    font-size: 14px;
+    line-height: 1.57;
+    color: #9ca3af;
+    margin-bottom: 24px;
+  }
+
+  /* Clean, status label */
+  .status-label {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 11px;
+    font-weight: 550;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    color: #9ca3af;
+    background-color: #1a2333;
+    padding: 4px 12px;
+    border-radius: 6px;
+    border: 1px solid #28354d;
+    margin-bottom: 20px;
+  }
+
   .status-dot {
-    width: 6px; height: 6px;
+    width: 6px;
+    height: 6px;
+    background-color: #9ca3af;
     border-radius: 50%;
-    background: #f43f5e;
-    animation: blink 2s ease-in-out infinite;
   }
-  @keyframes blink {
-    0%, 100% { opacity: 1; }
-    50% { opacity: 0.3; }
+
+  .divider {
+    height: 1px;
+    background-color: #1f293d;
+    margin: 24px 0 0 0;
   }
 </style>
 </head>
 <body>
-  <div class="particles">
-    <div class="particle"></div><div class="particle"></div>
-    <div class="particle"></div><div class="particle"></div>
-    <div class="particle"></div><div class="particle"></div>
-    <div class="particle"></div><div class="particle"></div>
-  </div>
+  <div class="grid-bg"></div>
+  <div class="radial-overlay"></div>
 
-  <div class="card">
-    <div class="icon-wrap">
-      <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
-        <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3.75m0-10.036A11.959 11.959 0 0 1 3.598 6 11.99 11.99 0 0 0 3 9.75c0 5.592 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.31-.21-2.571-.598-3.751h-.152c-3.196 0-6.1-1.249-8.25-3.286Zm0 13.036h.008v.008H12v-.008Z" />
-      </svg>
-    </div>
+  <div class="container">
+    <div class="panel">
+      <div class="icon-container">
+        <!-- Crisp Custom SVG for Broken Link / Deactivated State -->
+        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.8" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M18.364 18.364A9 9 0 0 0 5.636 5.636m12.728 12.728A9 9 0 0 1 5.636 5.636m12.728 12.728L5.636 5.636" />
+        </svg>
+      </div>
 
-    <div class="status">
-      <span class="status-dot"></span>
-      Deactivated
-    </div>
+      <div class="status-label">
+        <span class="status-dot"></span>
+        Temporarily Inactive
+      </div>
 
-    <h1>This QR Code Has Been Disabled</h1>
+      <h1>QR Code Deactivated</h1>
+      
+      <p>
+        The administrator has temporarily deactivated this link. If you scanned a physical code or leaflet, please check back again later.
+      </p>
 
-    <p class="subtitle">
-      The owner has temporarily deactivated this link.<br />
-      Please contact them if you believe this is an error.
-    </p>
-
-    <div class="divider"></div>
-
-    <div class="footer">
-      <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
-        <path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75 11.25 15 15 9.75m-3-7.036A11.959 11.959 0 0 1 3.598 6 11.99 11.99 0 0 0 3 9.749c0 5.592 3.824 10.29 9 11.623 5.176-1.332 9-6.03 9-11.622 0-1.31-.21-2.572-.598-3.751h-.152c-3.196 0-6.1-1.25-8.25-3.286Z" />
-      </svg>
-      Powered by QR System
+      <div class="divider"></div>
     </div>
   </div>
 </body>
