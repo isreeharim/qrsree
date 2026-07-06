@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
-import { ArrowLeft, Pencil, Trash2, Copy, ScanLine, MapPin } from 'lucide-react';
-import { getQrCodeById, updateQrCode, deleteQrCode, getScanHistory } from '../api/qr';
+import { ArrowLeft, Pencil, Trash2, Copy, ScanLine, MapPin, Power } from 'lucide-react';
+import { getQrCodeById, updateQrCode, deleteQrCode, getScanHistory, toggleQrStatus } from '../api/qr';
 import QRCodeDisplay from '../components/QRCodeDisplay';
 import QRFormModal from '../components/QRFormModal';
 import ConfirmDialog from '../components/ConfirmDialog';
@@ -69,6 +69,16 @@ export default function QRDetail() {
     toast.success('Short URL copied to clipboard');
   };
 
+  const handleToggle = async () => {
+    try {
+      const updated = await toggleQrStatus(id);
+      setQr(updated);
+      toast.success(updated.isActive ? 'QR code enabled' : 'QR code disabled');
+    } catch (err) {
+      toast.error(err.response?.data?.message || 'Failed to toggle status');
+    }
+  };
+
   if (loading) {
     return (
       <div className="flex h-64 items-center justify-center">
@@ -95,9 +105,18 @@ export default function QRDetail() {
           <QRCodeDisplay shortUrl={qr.shortUrl} title={qr.title} size={200} />
 
           <div className="mt-5 text-center">
-            <h2 className="font-display text-lg font-semibold text-slate-900 dark:text-white">
-              {qr.title}
-            </h2>
+            <div className="flex items-center justify-center gap-2">
+              <h2 className="font-display text-lg font-semibold text-slate-900 dark:text-white">
+                {qr.title}
+              </h2>
+              <span className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-[11px] font-semibold uppercase tracking-wider ${
+                qr.isActive
+                  ? 'bg-emerald-100 text-emerald-700 dark:bg-emerald-500/20 dark:text-emerald-400'
+                  : 'bg-red-100 text-red-600 dark:bg-red-500/20 dark:text-red-400'
+              }`}>
+                {qr.isActive ? 'Active' : 'Disabled'}
+              </span>
+            </div>
             <button
               onClick={copyShortUrl}
               className="mt-1 inline-flex items-center gap-1.5 text-sm font-mono text-teal-600 dark:text-teal-400 hover:underline"
@@ -107,7 +126,18 @@ export default function QRDetail() {
             </button>
           </div>
 
-          <div className="mt-5 flex justify-center gap-2">
+          <div className="mt-5 flex flex-wrap justify-center gap-2">
+            <button
+              onClick={handleToggle}
+              className={`inline-flex items-center gap-1.5 rounded-lg border px-3 py-1.5 text-sm font-medium transition-colors ${
+                qr.isActive
+                  ? 'border-amber-200 dark:border-amber-500/30 text-amber-600 hover:bg-amber-50 dark:hover:bg-amber-500/10'
+                  : 'border-emerald-200 dark:border-emerald-500/30 text-emerald-600 hover:bg-emerald-50 dark:hover:bg-emerald-500/10'
+              }`}
+            >
+              <Power className="h-3.5 w-3.5" />
+              {qr.isActive ? 'Disable' : 'Enable'}
+            </button>
             <button
               onClick={() => setEditOpen(true)}
               className="inline-flex items-center gap-1.5 rounded-lg border border-slate-200 dark:border-navy-600 px-3 py-1.5 text-sm font-medium text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-navy-700 transition-colors"

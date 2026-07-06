@@ -14,3 +14,6 @@ export const deleteQrCode = (id) => api.delete(`/api/qrcodes/${id}`).then((res) 
 
 export const getScanHistory = (id) =>
   api.get(`/api/qrcodes/${id}/scans`).then((res) => res.data.data);
+
+export const toggleQrStatus = (id) =>
+  api.patch(`/api/qrcodes/${id}/toggle`).then((res) => res.data.data);

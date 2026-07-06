@@ -21,6 +21,7 @@ function serializeQr(qr) {
     shortUrl: buildShortUrl(qr.shortCode),
     destinationUrl: qr.destinationUrl,
     scanCount: qr.scanCount,
+    isActive: qr.isActive,
     createdBy: qr.createdBy,
     createdAt: qr.createdAt,
     updatedAt: qr.updatedAt,
@@ -112,4 +113,18 @@ const deleteQr = asyncHandler(async (req, res) => {
   res.status(200).json({ success: true, message: 'QR code deleted successfully' });
 });
 
-module.exports = { createQr, getAllQr, getQrById, updateQr, deleteQr, buildShortUrl, serializeQr };
+const toggleQrStatus = asyncHandler(async (req, res) => {
+  const qr = await QRCode.findById(req.params.id);
+  if (!qr) throw new AppError('QR code not found', 404);
+
+  if (req.user.role !== 'admin' && qr.createdBy.toString() !== req.user._id.toString()) {
+    throw new AppError('Not authorized to access this QR code', 403);
+  }
+
+  qr.isActive = !qr.isActive;
+  await qr.save();
+
+  res.status(200).json({ success: true, data: serializeQr(qr) });
+});
+
+module.exports = { createQr, getAllQr, getQrById, updateQr, deleteQr, toggleQrStatus, buildShortUrl, serializeQr };

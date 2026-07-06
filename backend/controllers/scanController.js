@@ -141,6 +141,39 @@ function renderNotFoundPage() {
 </html>`;
 }
 
+function renderDisabledPage() {
+  return `<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>QR Code Disabled</title>
+<style>
+  html, body {
+    margin: 0;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: #0B1220;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Inter, sans-serif;
+    color: #E7ECF3;
+    text-align: center;
+    padding: 24px;
+  }
+  h1 { font-size: 20px; margin-bottom: 8px; }
+  p { color: #8B99AE; font-size: 14px; }
+</style>
+</head>
+<body>
+  <div>
+    <h1>This QR code has been disabled</h1>
+    <p>The owner has temporarily deactivated this link.</p>
+  </div>
+</body>
+</html>`;
+}
+
 /**
  * GET /q/:shortCode
  * The route printed on every QR code. Records analytics immediately,
@@ -153,6 +186,11 @@ const handleRedirect = asyncHandler(async (req, res) => {
 
   if (!qr) {
     res.status(404).set('Content-Type', 'text/html').send(renderNotFoundPage());
+    return;
+  }
+
+  if (!qr.isActive) {
+    res.status(410).set('Content-Type', 'text/html').send(renderDisabledPage());
     return;
   }
 

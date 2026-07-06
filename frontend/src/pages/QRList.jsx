@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Plus, QrCode as QrCodeIcon } from 'lucide-react';
-import { getAllQrCodes, createQrCode, updateQrCode, deleteQrCode } from '../api/qr';
+import { getAllQrCodes, createQrCode, updateQrCode, deleteQrCode, toggleQrStatus } from '../api/qr';
 import QRCard from '../components/QRCard';
 import QRFormModal from '../components/QRFormModal';
 import ConfirmDialog from '../components/ConfirmDialog';
@@ -70,6 +70,16 @@ export default function QRList() {
     }
   };
 
+  const handleToggle = async (qr) => {
+    try {
+      const updated = await toggleQrStatus(qr.id);
+      setQrCodes((prev) => prev.map((q) => (q.id === updated.id ? updated : q)));
+      toast.success(updated.isActive ? 'QR code enabled' : 'QR code disabled');
+    } catch (err) {
+      toast.error(err.response?.data?.message || 'Failed to toggle QR code status');
+    }
+  };
+
   return (
     <div className="animate-fade-in">
       <div className="mb-5 flex items-center justify-between">
@@ -103,6 +113,7 @@ export default function QRList() {
               qr={qr}
               onEdit={(target) => setModalState({ open: true, mode: 'edit', data: target })}
               onDelete={setDeleteTarget}
+              onToggle={handleToggle}
             />
           ))}
         </div>

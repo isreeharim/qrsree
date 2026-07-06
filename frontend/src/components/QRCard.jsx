@@ -1,19 +1,34 @@
 import { Link } from 'react-router-dom';
 import { QRCodeCanvas } from 'qrcode.react';
-import { ScanLine, Pencil, Trash2, ExternalLink } from 'lucide-react';
+import { ScanLine, Pencil, Trash2, ExternalLink, Power } from 'lucide-react';
 
-export default function QRCard({ qr, onEdit, onDelete }) {
+export default function QRCard({ qr, onEdit, onDelete, onToggle }) {
   return (
-    <div className="group relative flex flex-col rounded-2xl border border-slate-200 dark:border-navy-700 bg-white dark:bg-navy-800 p-5 shadow-sm hover:shadow-md hover:border-teal-500/40 transition-all">
+    <div className={`group relative flex flex-col rounded-2xl border bg-white dark:bg-navy-800 p-5 shadow-sm hover:shadow-md transition-all ${
+      qr.isActive
+        ? 'border-slate-200 dark:border-navy-700 hover:border-teal-500/40'
+        : 'border-red-200 dark:border-red-500/30 opacity-75'
+    }`}>
       <Link to={`/qrcodes/${qr.id}`} className="flex gap-4">
-        <div className="flex-shrink-0 rounded-lg bg-white p-2 ring-1 ring-slate-200 h-fit">
+        <div className={`flex-shrink-0 rounded-lg bg-white p-2 ring-1 h-fit ${
+          qr.isActive ? 'ring-slate-200' : 'ring-red-200 dark:ring-red-500/30'
+        }`}>
           <QRCodeCanvas value={qr.shortUrl} size={56} level="M" pixelRatio={1} />
         </div>
 
         <div className="min-w-0 flex-1">
-          <h3 className="truncate font-display font-semibold text-slate-900 dark:text-white">
-            {qr.title}
-          </h3>
+          <div className="flex items-center gap-2">
+            <h3 className="truncate font-display font-semibold text-slate-900 dark:text-white">
+              {qr.title}
+            </h3>
+            <span className={`flex-shrink-0 inline-flex items-center rounded-full px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wider ${
+              qr.isActive
+                ? 'bg-emerald-100 text-emerald-700 dark:bg-emerald-500/20 dark:text-emerald-400'
+                : 'bg-red-100 text-red-600 dark:bg-red-500/20 dark:text-red-400'
+            }`}>
+              {qr.isActive ? 'Active' : 'Disabled'}
+            </span>
+          </div>
           <p className="mt-0.5 truncate text-xs font-mono text-teal-600 dark:text-teal-400">
             /q/{qr.shortCode}
           </p>
@@ -31,6 +46,17 @@ export default function QRCard({ qr, onEdit, onDelete }) {
         </div>
 
         <div className="flex items-center gap-1">
+          <button
+            onClick={() => onToggle(qr)}
+            title={qr.isActive ? 'Disable QR' : 'Enable QR'}
+            className={`rounded-lg p-1.5 transition-colors ${
+              qr.isActive
+                ? 'text-emerald-500 hover:bg-emerald-50 hover:text-emerald-700 dark:hover:bg-emerald-500/10'
+                : 'text-red-400 hover:bg-red-50 hover:text-red-600 dark:hover:bg-red-500/10'
+            }`}
+          >
+            <Power className="h-4 w-4" />
+          </button>
           <a
             href={qr.destinationUrl}
             target="_blank"
