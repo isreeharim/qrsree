@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
 import { ArrowLeft, Pencil, Trash2, Copy, ScanLine, MapPin, Power, Download, Clock } from 'lucide-react';
-import { getQrCodeById, updateQrCode, deleteQrCode, getScanHistory, toggleQrStatus, getExportScansUrl } from '../api/qr';
+import { getQrCodeById, updateQrCode, deleteQrCode, getScanHistory, toggleQrStatus, exportQrScans } from '../api/qr';
 import QRCodeDisplay from '../components/QRCodeDisplay';
 import QRFormModal from '../components/QRFormModal';
 import ConfirmDialog from '../components/ConfirmDialog';
@@ -23,6 +23,7 @@ export default function QRDetail() {
   const [editOpen, setEditOpen] = useState(false);
   const [deleteOpen, setDeleteOpen] = useState(false);
   const [deleting, setDeleting] = useState(false);
+  const [exportLoading, setExportLoading] = useState(false);
 
   const load = useCallback(async () => {
     try {
@@ -76,6 +77,17 @@ export default function QRDetail() {
       toast.success(updated.isActive ? 'QR code enabled' : 'QR code disabled');
     } catch (err) {
       toast.error(err.response?.data?.message || 'Failed to toggle status');
+    }
+  };
+
+  const handleExport = async () => {
+    setExportLoading(true);
+    try {
+      await exportQrScans(id, qr.shortCode);
+    } catch (err) {
+      toast.error(err.message || 'Failed to export CSV');
+    } finally {
+      setExportLoading(false);
     }
   };
 
@@ -196,14 +208,14 @@ export default function QRDetail() {
                 Scan history
               </h3>
               {scans.length > 0 && (
-                <a
-                  href={getExportScansUrl(id)}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="inline-flex items-center gap-1 text-xs font-semibold text-teal-600 dark:text-teal-400 hover:underline"
+                <button
+                  onClick={handleExport}
+                  disabled={exportLoading}
+                  className="inline-flex items-center gap-1 text-xs font-semibold text-teal-600 dark:text-teal-400 hover:underline disabled:opacity-50"
                 >
-                  <Download className="h-3.5 w-3.5" /> Export CSV
-                </a>
+                  <Download className="h-3.5 w-3.5" />
+                  {exportLoading ? 'Exporting…' : 'Export CSV'}
+                </button>
               )}
             </div>
 
