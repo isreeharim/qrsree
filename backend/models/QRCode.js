@@ -29,6 +29,10 @@ const qrCodeSchema = new mongoose.Schema(
       type: Boolean,
       default: true,
     },
+    expiresAt: {
+      type: Date,
+      default: null,
+    },
     createdBy: {
       type: mongoose.Schema.Types.ObjectId,
       ref: 'User',

@@ -1,5 +1,6 @@
 const QRCode = require('../models/QRCode');
 const ScanLog = require('../models/ScanLog');
+const Settings = require('../models/Settings');
 const AppError = require('../utils/AppError');
 const asyncHandler = require('../utils/asyncHandler');
 const { generateUniqueShortCode } = require('../utils/generateShortCode');
@@ -22,6 +23,7 @@ function serializeQr(qr) {
     destinationUrl: qr.destinationUrl,
     scanCount: qr.scanCount,
     isActive: qr.isActive,
+    expiresAt: qr.expiresAt,
     createdBy: qr.createdBy,
     createdAt: qr.createdAt,
     updatedAt: qr.updatedAt,
@@ -34,7 +36,16 @@ function serializeQr(qr) {
  * the client never supplies it — so uniqueness is always guaranteed.
  */
 const createQr = asyncHandler(async (req, res) => {
-  const { title, destinationUrl } = req.body;
+  const { title, destinationUrl, expiresAt } = req.body;
+
+  // Validate creation limit for non-admin creators
+  if (req.user.role !== 'admin') {
+    const settings = await Settings.findOne() || await Settings.create({});
+    const count = await QRCode.countDocuments({ createdBy: req.user._id });
+    if (count >= settings.maxQrLimitPerUser) {
+      throw new AppError(`Limit reached. Standard users can create at most ${settings.maxQrLimitPerUser} QR codes.`, 403);
+    }
+  }
 
   const shortCode = await generateUniqueShortCode();
 
@@ -43,6 +54,7 @@ const createQr = asyncHandler(async (req, res) => {
     destinationUrl,
     shortCode,
     createdBy: req.user._id,
+    expiresAt: expiresAt || null,
   });
 
   res.status(201).json({ success: true, data: serializeQr(qr) });
@@ -78,7 +90,7 @@ const getQrById = asyncHandler(async (req, res) => {
  * Updates the title and/or destination URL. Scoped by ownership.
  */
 const updateQr = asyncHandler(async (req, res) => {
-  const { title, destinationUrl } = req.body;
+  const { title, destinationUrl, expiresAt } = req.body;
 
   const qr = await QRCode.findById(req.params.id);
   if (!qr) throw new AppError('QR code not found', 404);
@@ -89,6 +101,7 @@ const updateQr = asyncHandler(async (req, res) => {
 
   if (title !== undefined) qr.title = title;
   if (destinationUrl !== undefined) qr.destinationUrl = destinationUrl;
+  if (expiresAt !== undefined) qr.expiresAt = expiresAt || null;
 
   await qr.save();
 
@@ -127,4 +140,39 @@ const toggleQrStatus = asyncHandler(async (req, res) => {
   res.status(200).json({ success: true, data: serializeQr(qr) });
 });
 
-module.exports = { createQr, getAllQr, getQrById, updateQr, deleteQr, toggleQrStatus, buildShortUrl, serializeQr };
+const exportQrScans = asyncHandler(async (req, res) => {
+  const qr = await QRCode.findById(req.params.id);
+  if (!qr) throw new AppError('QR code not found', 404);
+
+  if (req.user.role !== 'admin' && qr.createdBy.toString() !== req.user._id.toString()) {
+    throw new AppError('Not authorized to access this QR code scans', 403);
+  }
+
+  const scans = await ScanLog.find({ qrCode: qr._id }).sort({ timestamp: -1 });
+
+  // Format as CSV
+  res.setHeader('Content-Type', 'text/csv');
+  res.setHeader('Content-Disposition', `attachment; filename=scans-${qr.shortCode}.csv`);
+
+  let csvContent = 'Timestamp,IP Address,Country,State,City,Latitude,Longitude\n';
+  scans.forEach((s) => {
+    const ts = new Date(s.timestamp).toISOString();
+    const ip = s.ipAddress || '';
+    const country = s.country || '';
+    const state = s.state || '';
+    const city = s.city || '';
+    const lat = s.latitude != null ? s.latitude : '';
+    const lon = s.longitude != null ? s.longitude : '';
+    
+    // Escaping comma fields
+    const cleanCity = city.includes(',') ? `"${city}"` : city;
+    const cleanState = state.includes(',') ? `"${state}"` : state;
+    const cleanCountry = country.includes(',') ? `"${country}"` : country;
+
+    csvContent += `${ts},${ip},${cleanCountry},${cleanState},${cleanCity},${lat},${lon}\n`;
+  });
+
+  res.status(200).send(csvContent);
+});
+
+module.exports = { createQr, getAllQr, getQrById, updateQr, deleteQr, toggleQrStatus, exportQrScans, buildShortUrl, serializeQr };

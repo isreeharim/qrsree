@@ -1,5 +1,5 @@
 const express = require('express');
-const { createQr, getAllQr, getQrById, updateQr, deleteQr, toggleQrStatus } = require('../controllers/qrController');
+const { createQr, getAllQr, getQrById, updateQr, deleteQr, toggleQrStatus, exportQrScans } = require('../controllers/qrController');
 const { getScanHistory } = require('../controllers/scanController');
 const { createQrRules, updateQrRules, validate } = require('../middleware/validate');
 const { protect } = require('../middleware/auth');
@@ -16,5 +16,6 @@ router.route('/:id').get(getQrById).put(updateQrRules, validate, updateQr).delet
 router.patch('/:id/toggle', toggleQrStatus);
 
 router.get('/:id/scans', getScanHistory);
+router.get('/:id/export', exportQrScans);
 
 module.exports = router;

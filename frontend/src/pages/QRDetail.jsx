@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
-import { ArrowLeft, Pencil, Trash2, Copy, ScanLine, MapPin, Power } from 'lucide-react';
-import { getQrCodeById, updateQrCode, deleteQrCode, getScanHistory, toggleQrStatus } from '../api/qr';
+import { ArrowLeft, Pencil, Trash2, Copy, ScanLine, MapPin, Power, Download, Clock } from 'lucide-react';
+import { getQrCodeById, updateQrCode, deleteQrCode, getScanHistory, toggleQrStatus, getExportScansUrl } from '../api/qr';
 import QRCodeDisplay from '../components/QRCodeDisplay';
 import QRFormModal from '../components/QRFormModal';
 import ConfirmDialog from '../components/ConfirmDialog';
@@ -170,20 +170,41 @@ export default function QRDetail() {
               {qr.destinationUrl}
             </a>
 
-            <div className="mt-4 flex items-center gap-2 border-t border-slate-100 dark:border-navy-700 pt-4 text-sm text-slate-500 dark:text-slate-400">
-              <ScanLine className="h-4 w-4" />
-              <span className="font-semibold text-slate-800 dark:text-slate-100">
-                {qr.scanCount}
-              </span>
-              total scans · created {new Date(qr.createdAt).toLocaleDateString()}
+            <div className="mt-4 flex flex-col gap-2 border-t border-slate-100 dark:border-navy-700 pt-4 text-sm text-slate-500 dark:text-slate-400">
+              <div className="flex items-center gap-2">
+                <ScanLine className="h-4 w-4" />
+                <span className="font-semibold text-slate-800 dark:text-slate-100">
+                  {qr.scanCount}
+                </span>
+                total scans · created {new Date(qr.createdAt).toLocaleDateString()}
+              </div>
+              {qr.expiresAt && (
+                <div className="flex items-center gap-2 text-amber-600 dark:text-amber-400">
+                  <Clock className="h-4 w-4" />
+                  <span>
+                    Expires: {new Date(qr.expiresAt).toLocaleString()}
+                    {new Date() > new Date(qr.expiresAt) && ' (Expired)'}
+                  </span>
+                </div>
+              )}
             </div>
           </div>
 
           <div className="rounded-2xl border border-slate-200 dark:border-navy-700 bg-white dark:bg-navy-800 shadow-sm">
-            <div className="border-b border-slate-100 dark:border-navy-700 px-5 py-4">
+            <div className="border-b border-slate-100 dark:border-navy-700 px-5 py-4 flex items-center justify-between">
               <h3 className="font-display font-semibold text-slate-900 dark:text-white">
                 Scan history
               </h3>
+              {scans.length > 0 && (
+                <a
+                  href={getExportScansUrl(id)}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-flex items-center gap-1 text-xs font-semibold text-teal-600 dark:text-teal-400 hover:underline"
+                >
+                  <Download className="h-3.5 w-3.5" /> Export CSV
+                </a>
+              )}
             </div>
 
             {scans.length === 0 ? (

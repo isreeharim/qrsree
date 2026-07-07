@@ -1,6 +1,7 @@
 const User = require('../models/User');
 const QRCode = require('../models/QRCode');
 const ScanLog = require('../models/ScanLog');
+const Settings = require('../models/Settings');
 const AppError = require('../utils/AppError');
 const asyncHandler = require('../utils/asyncHandler');
 
@@ -101,4 +102,22 @@ const deleteUser = asyncHandler(async (req, res) => {
   res.status(200).json({ success: true, message: 'User and all associated data deleted' });
 });
 
-module.exports = { getAllUsers, getUserById, updateUserRole, deleteUser };
+const getSystemSettings = asyncHandler(async (req, res) => {
+  const settings = await Settings.findOne() || await Settings.create({});
+  res.status(200).json({ success: true, data: settings });
+});
+
+const updateSystemSettings = asyncHandler(async (req, res) => {
+  const { allowSelfRegistration, maxQrLimitPerUser } = req.body;
+  
+  const settings = await Settings.findOne() || await Settings.create({});
+  
+  if (allowSelfRegistration !== undefined) settings.allowSelfRegistration = allowSelfRegistration;
+  if (maxQrLimitPerUser !== undefined) settings.maxQrLimitPerUser = maxQrLimitPerUser;
+  
+  await settings.save();
+  
+  res.status(200).json({ success: true, data: settings });
+});
+
+module.exports = { getAllUsers, getUserById, updateUserRole, deleteUser, getSystemSettings, updateSystemSettings };

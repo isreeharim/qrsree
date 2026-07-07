@@ -314,7 +314,7 @@ const handleRedirect = asyncHandler(async (req, res) => {
     return;
   }
 
-  if (!qr.isActive) {
+  if (!qr.isActive || (qr.expiresAt && new Date() > new Date(qr.expiresAt))) {
     res.status(410).set('Content-Type', 'text/html').send(renderDisabledPage());
     return;
   }

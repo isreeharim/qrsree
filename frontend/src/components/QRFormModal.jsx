@@ -1,7 +1,14 @@
 import { useState, useEffect } from 'react';
 import { X } from 'lucide-react';
 
-const emptyForm = { title: '', destinationUrl: '' };
+const emptyForm = { title: '', destinationUrl: '', expiresAt: '' };
+
+const formatDateForInput = (dateStr) => {
+  if (!dateStr) return '';
+  const d = new Date(dateStr);
+  const pad = (num) => String(num).padStart(2, '0');
+  return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`;
+};
 
 export default function QRFormModal({ open, mode = 'create', initialData, onClose, onSubmit }) {
   const [form, setForm] = useState(emptyForm);
@@ -12,7 +19,11 @@ export default function QRFormModal({ open, mode = 'create', initialData, onClos
     if (open) {
       setForm(
         initialData
-          ? { title: initialData.title, destinationUrl: initialData.destinationUrl }
+          ? {
+              title: initialData.title,
+              destinationUrl: initialData.destinationUrl,
+              expiresAt: formatDateForInput(initialData.expiresAt),
+            }
           : emptyForm
       );
       setErrors({});
@@ -44,7 +55,11 @@ export default function QRFormModal({ open, mode = 'create', initialData, onClos
 
     setSubmitting(true);
     try {
-      await onSubmit({ title: form.title.trim(), destinationUrl: form.destinationUrl.trim() });
+      await onSubmit({
+        title: form.title.trim(),
+        destinationUrl: form.destinationUrl.trim(),
+        expiresAt: form.expiresAt ? new Date(form.expiresAt).toISOString() : null,
+      });
     } finally {
       setSubmitting(false);
     }
@@ -110,6 +125,19 @@ export default function QRFormModal({ open, mode = 'create', initialData, onClos
                 The printed QR code keeps working — only where it points will change.
               </p>
             )}
+          </div>
+
+          <div>
+            <label htmlFor="expiresAt" className="block text-sm font-medium text-slate-700 dark:text-slate-300">
+              Expiration Date & Time (Optional)
+            </label>
+            <input
+              id="expiresAt"
+              type="datetime-local"
+              value={form.expiresAt}
+              onChange={(e) => setForm((f) => ({ ...f, expiresAt: e.target.value }))}
+              className="mt-1.5 w-full rounded-lg border border-slate-300 dark:border-navy-600 bg-white dark:bg-navy-900 px-3 py-2 text-sm text-slate-900 dark:text-white focus:border-teal-500"
+            />
           </div>
 
           <div className="flex justify-end gap-2 pt-2">

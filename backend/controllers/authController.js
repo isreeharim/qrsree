@@ -2,6 +2,7 @@ const User = require('../models/User');
 const AppError = require('../utils/AppError');
 const asyncHandler = require('../utils/asyncHandler');
 const generateToken = require('../utils/generateToken');
+const Settings = require('../models/Settings');
 
 /**
  * POST /api/auth/register
@@ -9,6 +10,11 @@ const generateToken = require('../utils/generateToken');
  */
 const register = asyncHandler(async (req, res) => {
   const { username, email, password, department } = req.body;
+
+  const settings = await Settings.findOne() || await Settings.create({});
+  if (!settings.allowSelfRegistration) {
+    throw new AppError('Self-registration is currently disabled by the administrator', 403);
+  }
 
   const existingUser = await User.findOne({
     $or: [{ username: username.toLowerCase() }, { email: email.toLowerCase() }]

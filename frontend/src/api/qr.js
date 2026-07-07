@@ -17,3 +17,6 @@ export const getScanHistory = (id) =>
 
 export const toggleQrStatus = (id) =>
   api.patch(`/api/qrcodes/${id}/toggle`).then((res) => res.data.data);
+
+export const getExportScansUrl = (id) => `${api.defaults.baseURL}/api/qrcodes/${id}/export`;
+
