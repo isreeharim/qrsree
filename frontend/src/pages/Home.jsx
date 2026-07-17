@@ -1,7 +1,169 @@
-import { useState, useRef, useCallback } from 'react';
+import { useState, useRef, useEffect, useCallback } from 'react';
 import { Link } from 'react-router-dom';
 import { QrCode, ArrowRight, RefreshCw, BarChart3, Shield, Users, MapPin, Zap } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
+
+/* ─── Cursor-reactive QR Grid Canvas Background ──────────────────────── */
+function QRInteractiveBackground() {
+  const canvasRef = useRef(null);
+  const mouseRef = useRef({ x: -1000, y: -1000, active: false });
+
+  useEffect(() => {
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+    const ctx = canvas.getContext('2d');
+    if (!ctx) return;
+
+    let animationFrameId;
+    let width = 0;
+    let height = 0;
+
+    const updateSize = () => {
+      const parent = canvas.parentElement;
+      if (parent) {
+        width = canvas.width = parent.scrollWidth || window.innerWidth;
+        height = canvas.height = parent.scrollHeight || window.innerHeight;
+      }
+    };
+
+    updateSize();
+
+    const handleMouseMove = (e) => {
+      const rect = canvas.getBoundingClientRect();
+      mouseRef.current = {
+        x: e.clientX - rect.left,
+        y: e.clientY - rect.top,
+        active: true,
+      };
+    };
+
+    const handleMouseLeave = () => {
+      mouseRef.current.active = false;
+    };
+
+    window.addEventListener('resize', updateSize);
+    window.addEventListener('mousemove', handleMouseMove);
+    document.addEventListener('mouseleave', handleMouseLeave);
+
+    const cellSize = 32;
+    const dotSize = 3;
+    const finders = [];
+    const numFinders = 16;
+
+    for (let i = 0; i < numFinders; i++) {
+      finders.push({
+        x: Math.random() * (window.innerWidth - 100) + 50,
+        y: Math.random() * (window.innerHeight * 2.5 - 100) + 50,
+        size: 28,
+        rotation: Math.random() * Math.PI * 2,
+        speed: (Math.random() - 0.5) * 0.003,
+      });
+    }
+
+    const drawFinderPattern = (ctx, x, y, size, opacity, glowColor) => {
+      ctx.save();
+      ctx.strokeStyle = glowColor;
+      ctx.lineWidth = 2.5;
+      ctx.globalAlpha = opacity;
+      ctx.strokeRect(x - size / 2, y - size / 2, size, size);
+      const innerSize = size * 0.45;
+      ctx.fillStyle = glowColor;
+      ctx.fillRect(x - innerSize / 2, y - innerSize / 2, innerSize, innerSize);
+      ctx.restore();
+    };
+
+    const render = () => {
+      ctx.clearRect(0, 0, width, height);
+
+      const mouse = mouseRef.current;
+      const cols = Math.ceil(width / cellSize);
+      const rows = Math.ceil(height / cellSize);
+
+      for (let c = 0; c < cols; c++) {
+        for (let r = 0; r < rows; r++) {
+          const x = c * cellSize + cellSize / 2;
+          const y = r * cellSize + cellSize / 2;
+
+          const dx = x - mouse.x;
+          const dy = y - mouse.y;
+          const dist = Math.sqrt(dx * dx + dy * dy);
+
+          let currentSize = dotSize;
+          let opacity = 0.04;
+          let color = 'rgba(20, 250, 200, ';
+
+          if (mouse.active && dist < 180) {
+            const factor = 1 - dist / 180;
+            opacity = 0.04 + factor * 0.5;
+            currentSize = dotSize + factor * 4.5;
+            const isSky = (c + r) % 2 === 0;
+            color = isSky ? 'rgba(56, 189, 248, ' : 'rgba(20, 250, 200, ';
+          }
+
+          ctx.fillStyle = color + opacity + ')';
+          ctx.fillRect(x - currentSize / 2, y - currentSize / 2, currentSize, currentSize);
+        }
+      }
+
+      finders.forEach((finder) => {
+        finder.rotation += finder.speed;
+
+        if (finder.x > width) finder.x = Math.random() * width;
+        if (finder.y > height) finder.y = Math.random() * height;
+
+        const dx = finder.x - mouse.x;
+        const dy = finder.y - mouse.y;
+        const dist = Math.sqrt(dx * dx + dy * dy);
+
+        let opacity = 0.08;
+        let glowColor = 'rgb(20, 250, 200)';
+
+        if (mouse.active && dist < 220) {
+          const factor = 1 - dist / 220;
+          opacity = 0.08 + factor * 0.6;
+          glowColor = `rgb(20, ${Math.floor(210 + factor * 45)}, ${Math.floor(210 + factor * 45)})`;
+        }
+
+        ctx.save();
+        ctx.translate(finder.x, finder.y);
+        ctx.rotate(finder.rotation);
+        drawFinderPattern(ctx, 0, 0, finder.size, opacity, glowColor);
+        ctx.restore();
+      });
+
+      if (mouse.active) {
+        ctx.save();
+        const gradient = ctx.createRadialGradient(mouse.x, mouse.y, 20, mouse.x, mouse.y, 200);
+        gradient.addColorStop(0, 'rgba(20, 250, 200, 0.08)');
+        gradient.addColorStop(1, 'rgba(20, 250, 200, 0)');
+        ctx.fillStyle = gradient;
+        ctx.beginPath();
+        ctx.arc(mouse.x, mouse.y, 200, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.restore();
+      }
+
+      animationFrameId = requestAnimationFrame(render);
+    };
+
+    render();
+
+    return () => {
+      window.removeEventListener('resize', updateSize);
+      window.removeEventListener('mousemove', handleMouseMove);
+      document.removeEventListener('mouseleave', handleMouseLeave);
+      cancelAnimationFrame(animationFrameId);
+    };
+  }, []);
+
+  return (
+    <canvas
+      ref={canvasRef}
+      className="absolute inset-0 w-full h-full pointer-events-none z-0"
+      style={{ mixBlendMode: 'screen' }}
+    />
+  );
+}
 
 /* ─── Cursor-aware QR mockup card ─────────────────────────────────────── */
 function QRHeroCard() {
@@ -43,7 +205,6 @@ function QRHeroCard() {
       }}
       className="relative w-72 sm:w-80 h-[450px] rounded-[40px] cursor-none select-none"
     >
-      {/* Outer glowing border ring */}
       <div
         className="absolute inset-0 rounded-[40px] pointer-events-none z-20 transition-opacity duration-300"
         style={{
@@ -51,7 +212,6 @@ function QRHeroCard() {
           background: `radial-gradient(200px circle at ${glow.x}% ${glow.y}%, rgba(20,250,200,0.18) 0%, transparent 70%)`,
         }}
       />
-      {/* Shimmer border */}
       <div
         className="absolute inset-0 rounded-[40px] pointer-events-none z-20 transition-opacity duration-300"
         style={{
@@ -60,7 +220,6 @@ function QRHeroCard() {
         }}
       />
 
-      {/* Custom cursor dot */}
       {glow.visible && (
         <div
           className="absolute z-30 pointer-events-none w-5 h-5 rounded-full border-2 border-teal-400/80 bg-teal-400/20 backdrop-blur-sm -translate-x-1/2 -translate-y-1/2 transition-none"
@@ -68,9 +227,7 @@ function QRHeroCard() {
         />
       )}
 
-      {/* Phone shell */}
       <div className="absolute inset-0 rounded-[40px] border-4 border-navy-700 bg-navy-900 p-3 shadow-2xl overflow-hidden z-10">
-        {/* Notch */}
         <div className="absolute top-0 inset-x-0 h-6 bg-navy-900 flex justify-center items-center z-10">
           <div className="w-20 h-4 bg-navy-950 rounded-full" />
         </div>
@@ -82,10 +239,8 @@ function QRHeroCard() {
               <span className="h-2 w-2 rounded-full bg-teal-400 animate-pulse" />
             </div>
 
-            {/* QR display */}
             <div className="bg-navy-900/80 border border-navy-800 rounded-2xl p-4 flex flex-col items-center gap-4">
-              <div className="bg-white p-3 rounded-xl relative overflow-hidden group-hover:shadow-[0_0_20px_rgba(20,250,200,0.3)] transition-shadow">
-                {/* QR grid */}
+              <div className="bg-white p-3 rounded-xl relative overflow-hidden transition-shadow">
                 <div className="grid grid-cols-7 gap-[2.5px] h-28 w-28">
                   {[
                     1,1,1,0,1,1,1,
@@ -102,7 +257,6 @@ function QRHeroCard() {
                     />
                   ))}
                 </div>
-                {/* Inner spotlight layer inside QR white box */}
                 <div
                   className="absolute inset-0 rounded-xl pointer-events-none transition-opacity duration-200"
                   style={{
@@ -118,7 +272,6 @@ function QRHeroCard() {
             </div>
           </div>
 
-          {/* Bottom destination */}
           <div className="space-y-3">
             <div className="text-xs text-slate-400">Current Destination:</div>
             <div className="bg-navy-900 border border-navy-800 rounded-xl p-3 text-xs font-mono truncate text-sky-400">
@@ -143,10 +296,12 @@ export default function Home() {
 
   return (
     <div className="min-h-screen bg-navy-950 text-white font-sans overflow-x-hidden relative">
+      {/* Interactive Cursor-Following QR Grid Background */}
+      <QRInteractiveBackground />
+
       {/* Background Decorative Elements */}
-      <div className="module-grid absolute inset-0 text-teal-500/[0.04] pointer-events-none" aria-hidden="true" />
-      <div className="absolute top-0 left-1/4 w-[500px] h-[500px] bg-teal-500/10 rounded-full blur-[120px] pointer-events-none" />
-      <div className="absolute top-1/3 right-1/4 w-[600px] h-[600px] bg-sky-500/10 rounded-full blur-[140px] pointer-events-none" />
+      <div className="absolute top-0 left-1/4 w-[500px] h-[500px] bg-teal-500/10 rounded-full blur-[120px] pointer-events-none z-0" />
+      <div className="absolute top-1/3 right-1/4 w-[600px] h-[600px] bg-sky-500/10 rounded-full blur-[140px] pointer-events-none z-0" />
 
       {/* Navigation Header */}
       <header className="sticky top-0 z-50 border-b border-navy-800 bg-navy-950/80 backdrop-blur-md">
