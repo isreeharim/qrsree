@@ -29,6 +29,18 @@
     background-size: 14px 14px;
   }
 
+  .glass-panel {
+    @apply bg-white/70 dark:bg-navy-900/60 backdrop-blur-md border border-slate-200/50 dark:border-navy-700/50 shadow-sm;
+  }
+
+  .glass-panel-hover {
+    @apply transition-all duration-300 hover:border-teal-500/40 hover:shadow-md;
+  }
+
+  .glow-orb {
+    @apply absolute rounded-full filter blur-[80px] opacity-10 dark:opacity-20 pointer-events-none;
+  }
+
   .scrollbar-thin {
     scrollbar-width: thin;
   }

@@ -7,7 +7,7 @@ const AppError = require('../utils/AppError');
 const asyncHandler = require('../utils/asyncHandler');
 
 const getAllUsers = asyncHandler(async (req, res) => {
-  const users = await User.find().sort({ createdAt: -1 }).select('-password');
+  const users = await User.find().sort({ createdAt: -1 }).select('username email role department createdAt');
   
   const usersWithCounts = await Promise.all(
     users.map(async (user) => {

@@ -109,7 +109,7 @@ export default function UserDetail() {
         Back to Users
       </Link>
 
-      <div className="rounded-2xl border border-slate-200 dark:border-navy-700 bg-white dark:bg-navy-800 p-6 shadow-sm flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+      <div className="rounded-2xl border border-slate-200/60 dark:border-navy-700/60 bg-white/70 dark:bg-navy-800/60 backdrop-blur-md p-6 shadow-sm flex flex-col md:flex-row md:items-center md:justify-between gap-4">
         <div>
           <div className="flex items-center gap-3">
             <h2 className="font-display text-xl font-bold text-slate-900 dark:text-white">

@@ -367,7 +367,9 @@ const updateScanLocation = asyncHandler(async (req, res) => {
 
 const getScanHistory = asyncHandler(async (req, res) => {
   const { id } = req.params;
-  const limit = Math.min(parseInt(req.query.limit, 10) || 100, 500);
+  const page = Math.max(parseInt(req.query.page, 10) || 1, 1);
+  const limit = Math.min(Math.max(parseInt(req.query.limit, 10) || 50, 1), 200);
+  const skip = (page - 1) * limit;
 
   const qr = await QRCode.findById(id);
   if (!qr) throw new AppError('QR code not found', 404);
@@ -376,9 +378,23 @@ const getScanHistory = asyncHandler(async (req, res) => {
     throw new AppError('Not authorized to access this QR code scans', 403);
   }
 
-  const scans = await ScanLog.find({ qrCode: id }).sort({ timestamp: -1 }).limit(limit);
+  const total = await ScanLog.countDocuments({ qrCode: id });
+  const scans = await ScanLog.find({ qrCode: id })
+    .sort({ timestamp: -1 })
+    .skip(skip)
+    .limit(limit);
 
-  res.status(200).json({ success: true, data: scans });
+  res.status(200).json({
+    success: true,
+    data: scans,
+    pagination: {
+      total,
+      page,
+      limit,
+      pages: Math.ceil(total / limit),
+      hasMore: skip + scans.length < total,
+    },
+  });
 });
 
 module.exports = { handleRedirect, updateScanLocation, getScanHistory };

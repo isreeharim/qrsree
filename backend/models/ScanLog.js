@@ -42,4 +42,6 @@ const scanLogSchema = new mongoose.Schema({
   },
 });
 
+scanLogSchema.index({ qrCode: 1, timestamp: -1 });
+
 module.exports = mongoose.model('ScanLog', scanLogSchema);

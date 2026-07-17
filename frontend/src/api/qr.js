@@ -12,8 +12,8 @@ export const updateQrCode = (id, payload) =>
 
 export const deleteQrCode = (id) => api.delete(`/api/qrcodes/${id}`).then((res) => res.data);
 
-export const getScanHistory = (id) =>
-  api.get(`/api/qrcodes/${id}/scans`).then((res) => res.data.data);
+export const getScanHistory = (id, page = 1, limit = 50) =>
+  api.get(`/api/qrcodes/${id}/scans`, { params: { page, limit } }).then((res) => res.data);
 
 export const toggleQrStatus = (id) =>
   api.patch(`/api/qrcodes/${id}/toggle`).then((res) => res.data.data);

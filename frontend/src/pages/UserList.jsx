@@ -238,7 +238,7 @@ export default function UserList() {
               <p className="text-slate-600 dark:text-slate-300 font-medium">No users found</p>
             </div>
           ) : (
-            <div className="rounded-2xl border border-slate-200 dark:border-navy-700 bg-white dark:bg-navy-800 shadow-sm overflow-hidden">
+            <div className="rounded-2xl border border-slate-200/60 dark:border-navy-700/60 bg-white/70 dark:bg-navy-800/60 backdrop-blur-md shadow-sm overflow-hidden">
               <div className="overflow-x-auto scrollbar-thin">
                 <table className="w-full text-left text-sm">
                   <thead>
@@ -352,7 +352,7 @@ export default function UserList() {
               <p className="text-slate-600 dark:text-slate-300 font-medium">No QR codes found</p>
             </div>
           ) : (
-            <div className="rounded-2xl border border-slate-200 dark:border-navy-700 bg-white dark:bg-navy-800 shadow-sm overflow-hidden">
+            <div className="rounded-2xl border border-slate-200/60 dark:border-navy-700/60 bg-white/70 dark:bg-navy-800/60 backdrop-blur-md shadow-sm overflow-hidden">
               <div className="overflow-x-auto scrollbar-thin">
                 <table className="w-full text-left text-sm">
                   <thead>
@@ -435,7 +435,7 @@ export default function UserList() {
             </div>
           ) : settings ? (
             <>
-              <div className="rounded-2xl border border-slate-200 dark:border-navy-700 bg-white dark:bg-navy-800 shadow-sm overflow-hidden">
+              <div className="rounded-2xl border border-slate-200/60 dark:border-navy-700/60 bg-white/70 dark:bg-navy-800/60 backdrop-blur-md shadow-sm overflow-hidden">
                 <div className="border-b border-slate-100 dark:border-navy-700 px-6 py-4">
                   <h3 className="font-display font-semibold text-slate-900 dark:text-white">Global System Settings</h3>
                   <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">These settings apply to all users in the system.</p>

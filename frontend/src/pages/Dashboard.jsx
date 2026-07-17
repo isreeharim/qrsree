@@ -74,23 +74,23 @@ export default function Dashboard() {
         )}
       </div>
 
-      <div className="rounded-2xl border border-slate-200 dark:border-navy-700 bg-white dark:bg-navy-800 shadow-sm">
-        <div className="flex items-center justify-between border-b border-slate-100 dark:border-navy-700 px-5 py-4">
-          <h2 className="font-display font-semibold text-slate-900 dark:text-white">
-            Recent scans
+      <div className="rounded-2xl border border-slate-200/60 dark:border-navy-700/60 bg-white/70 dark:bg-navy-800/60 backdrop-blur-md shadow-sm">
+        <div className="flex items-center justify-between border-b border-slate-100 dark:border-navy-700 px-6 py-4.5">
+          <h2 className="font-display font-semibold text-slate-900 dark:text-white text-base">
+            Recent activity logs
           </h2>
           <Link
             to="/qrcodes"
-            className="text-sm font-medium text-teal-600 dark:text-teal-400 hover:underline"
+            className="text-xs font-semibold uppercase tracking-wider text-teal-600 dark:text-teal-400 hover:text-teal-500 transition-colors"
           >
             View all QR codes
           </Link>
         </div>
 
         {stats.recentScans.length === 0 ? (
-          <div className="p-10 text-center">
-            <p className="text-sm text-slate-500 dark:text-slate-400">
-              No scans yet. Once someone scans a QR code, activity shows up here.
+          <div className="p-12 text-center">
+            <p className="text-sm text-slate-450 dark:text-slate-400">
+              No scan logs captured yet. Dynamic QR activities will display here.
             </p>
           </div>
         ) : (
@@ -98,39 +98,39 @@ export default function Dashboard() {
             <table className="w-full text-left text-sm">
               <thead>
                 <tr className="border-b border-slate-100 dark:border-navy-700 text-slate-500 dark:text-slate-400">
-                  <th className="px-5 py-3 font-medium">QR code</th>
-                  <th className="px-5 py-3 font-medium">Location</th>
-                  <th className="px-5 py-3 font-medium">GPS</th>
-                  <th className="px-5 py-3 font-medium">Time</th>
+                  <th className="px-6 py-4.5 font-medium text-xs uppercase tracking-wider">QR Code</th>
+                  <th className="px-6 py-4.5 font-medium text-xs uppercase tracking-wider">Geographic Region</th>
+                  <th className="px-6 py-4.5 font-medium text-xs uppercase tracking-wider">GPS Coordinates</th>
+                  <th className="px-6 py-4.5 font-medium text-xs uppercase tracking-wider">Date & Time</th>
                 </tr>
               </thead>
               <tbody>
                 {stats.recentScans.map((scan) => (
                   <tr
                     key={scan.id}
-                    className="border-b border-slate-50 dark:border-navy-700/60 last:border-0"
+                    className="border-b border-slate-50 dark:border-navy-700/40 last:border-0 hover:bg-slate-50/50 dark:hover:bg-navy-700/20 transition-colors"
                   >
-                    <td className="px-5 py-3">
-                      <div className="font-medium text-slate-800 dark:text-slate-100">
+                    <td className="px-6 py-4">
+                      <div className="font-semibold text-slate-800 dark:text-slate-100">
                         {scan.qrTitle}
                       </div>
-                      <div className="font-mono text-xs text-teal-600 dark:text-teal-400">
+                      <div className="font-mono text-[10px] text-teal-600 dark:text-teal-400 mt-0.5">
                         /q/{scan.shortCode}
                       </div>
                     </td>
-                    <td className="px-5 py-3 text-slate-600 dark:text-slate-300">
+                    <td className="px-6 py-4 text-slate-650 dark:text-slate-350 font-medium">
                       {scan.city}, {scan.state}, {scan.country}
                     </td>
-                    <td className="px-5 py-3">
+                    <td className="px-6 py-4">
                       {scan.latitude != null ? (
-                        <span className="inline-flex items-center gap-1 text-teal-600 dark:text-teal-400">
-                          <MapPin className="h-3.5 w-3.5" /> Captured
+                        <span className="inline-flex items-center gap-1.5 rounded-full bg-teal-500/10 px-2.5 py-0.5 text-xs font-semibold text-teal-600 dark:text-teal-400">
+                          <MapPin className="h-3 w-3" /> GPS Logged
                         </span>
                       ) : (
                         <span className="text-slate-400">—</span>
                       )}
                     </td>
-                    <td className="px-5 py-3 whitespace-nowrap text-slate-500 dark:text-slate-400">
+                    <td className="px-6 py-4 whitespace-nowrap text-slate-500 dark:text-slate-400 text-xs">
                       {formatTimestamp(scan.timestamp)}
                     </td>
                   </tr>

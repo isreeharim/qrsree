@@ -28,7 +28,7 @@ export default {
         },
       },
       fontFamily: {
-        display: ['Sora', 'sans-serif'],
+        display: ['Outfit', 'sans-serif'],
         sans: ['Inter', 'sans-serif'],
         mono: ['"JetBrains Mono"', 'monospace'],
       },

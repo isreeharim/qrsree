@@ -47,4 +47,6 @@ const qrCodeSchema = new mongoose.Schema(
 // at read time (in the controller) rather than stored, so it stays correct
 // even if the server's domain changes.
 
+qrCodeSchema.index({ createdBy: 1, createdAt: -1 });
+
 module.exports = mongoose.model('QRCode', qrCodeSchema);

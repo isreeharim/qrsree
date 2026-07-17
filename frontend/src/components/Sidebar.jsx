@@ -23,11 +23,11 @@ export default function Sidebar({ open, onClose }) {
       )}
 
       <aside
-        className={`fixed inset-y-0 left-0 z-40 w-64 transform border-r border-slate-200 dark:border-navy-700 bg-white dark:bg-navy-900 transition-transform duration-200 lg:static lg:translate-x-0 ${
+        className={`fixed inset-y-0 left-0 z-40 w-64 flex flex-col h-full transform border-r border-slate-200 dark:border-navy-700 bg-white dark:bg-navy-900 transition-transform duration-200 lg:static lg:translate-x-0 ${
           open ? 'translate-x-0' : '-translate-x-full'
         }`}
       >
-        <div className="flex h-16 items-center justify-between px-5 border-b border-slate-200 dark:border-navy-700">
+        <div className="flex h-16 items-center justify-between px-5 border-b border-slate-200 dark:border-navy-700 flex-shrink-0">
           <div className="flex items-center gap-2.5">
             <QrLogoMark />
             <span className="font-display font-semibold text-slate-900 dark:text-white tracking-tight">
@@ -43,17 +43,17 @@ export default function Sidebar({ open, onClose }) {
           </button>
         </div>
 
-        <nav className="flex flex-col gap-1 p-3">
+        <nav className="flex-1 overflow-y-auto flex flex-col gap-1 p-3 scrollbar-thin">
           {navItems.map(({ to, label, icon: Icon }) => (
             <NavLink
               key={to}
               to={to}
               onClick={onClose}
               className={({ isActive }) =>
-                `flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium transition-colors ${
+                `flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium transition-all ${
                   isActive
-                    ? 'bg-teal-500/10 text-teal-600 dark:text-teal-400'
-                    : 'text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-navy-800'
+                    ? 'bg-teal-500/10 text-teal-600 dark:text-teal-400 font-semibold shadow-[inset_3px_0_0_#00c9a7] pl-4'
+                    : 'text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-navy-800/40 hover:text-slate-900 dark:hover:text-white pl-3'
                 }`
               }
             >
@@ -63,21 +63,24 @@ export default function Sidebar({ open, onClose }) {
           ))}
         </nav>
 
-        <div className="absolute bottom-0 left-0 w-full border-t border-slate-200 dark:border-navy-700 p-3">
-          <div className="flex items-center gap-3 rounded-xl px-3 py-2">
-            <div className="flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-teal-500 to-sky-500 text-xs font-semibold text-white">
+        <div className="border-t border-slate-100 dark:border-navy-800 p-4 bg-white/50 dark:bg-navy-900/50 backdrop-blur-sm mt-auto flex-shrink-0">
+          <div className="flex items-center gap-3 rounded-xl px-2 py-1.5">
+            <div className="flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-teal-500 to-sky-500 text-xs font-bold text-white shadow-md shadow-teal-500/10">
               {user?.username?.slice(0, 2).toUpperCase() || 'AD'}
             </div>
             <div className="flex-1 truncate">
-              <p className="truncate text-sm font-medium text-slate-800 dark:text-slate-100">
+              <p className="truncate text-sm font-semibold text-slate-800 dark:text-slate-100">
                 {user?.username || 'Admin'}
+              </p>
+              <p className="truncate text-[10px] text-slate-400 dark:text-slate-500 font-medium uppercase tracking-wider">
+                {user?.role || 'user'}
               </p>
             </div>
             <button
               onClick={logout}
               aria-label="Log out"
               title="Log out"
-              className="text-slate-400 hover:text-red-500 transition-colors"
+              className="text-slate-400 hover:text-red-500 transition-colors p-1.5 rounded-lg hover:bg-slate-50 dark:hover:bg-navy-800"
             >
               <LogOut className="h-5 w-5" />
             </button>
@@ -88,8 +91,6 @@ export default function Sidebar({ open, onClose }) {
   );
 }
 
-// Small QR-module glyph used as the app's logo mark — a nod to the
-// literal subject matter without turning every screen into a QR pattern.
 function QrLogoMark() {
   const cells = [1, 0, 1, 0, 1, 1, 1, 0, 1];
   return (
@@ -97,7 +98,7 @@ function QrLogoMark() {
       {cells.map((filled, i) => (
         <span
           key={i}
-          className={`rounded-[1px] ${filled ? 'bg-teal-500' : 'bg-transparent'}`}
+          className={`rounded-[1px] ${filled ? 'bg-teal-500 shadow-[0_0_6px_rgba(20,250,200,0.3)]' : 'bg-transparent'}`}
         />
       ))}
     </div>

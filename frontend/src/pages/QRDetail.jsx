@@ -24,12 +24,15 @@ export default function QRDetail() {
   const [deleteOpen, setDeleteOpen] = useState(false);
   const [deleting, setDeleting] = useState(false);
   const [exportLoading, setExportLoading] = useState(false);
+  const [pagination, setPagination] = useState({ total: 0, page: 1, limit: 50, pages: 1 });
+  const [scansLoading, setScansLoading] = useState(false);
 
   const load = useCallback(async () => {
     try {
-      const [qrData, scanData] = await Promise.all([getQrCodeById(id), getScanHistory(id)]);
+      const [qrData, scansRes] = await Promise.all([getQrCodeById(id), getScanHistory(id, 1, 50)]);
       setQr(qrData);
-      setScans(scanData);
+      setScans(scansRes.data);
+      setPagination(scansRes.pagination);
     } catch (err) {
       toast.error(err.response?.data?.message || 'Failed to load QR code');
       navigate('/qrcodes');
@@ -41,6 +44,19 @@ export default function QRDetail() {
   useEffect(() => {
     load();
   }, [load]);
+
+  const handlePageChange = async (nextPage) => {
+    setScansLoading(true);
+    try {
+      const scansRes = await getScanHistory(id, nextPage, 50);
+      setScans(scansRes.data);
+      setPagination(scansRes.pagination);
+    } catch (err) {
+      toast.error(err.response?.data?.message || 'Failed to load scan page');
+    } finally {
+      setScansLoading(false);
+    }
+  };
 
   const handleEditSubmit = async (payload) => {
     try {
@@ -201,17 +217,16 @@ export default function QRDetail() {
               )}
             </div>
           </div>
-
-          <div className="rounded-2xl border border-slate-200 dark:border-navy-700 bg-white dark:bg-navy-800 shadow-sm">
-            <div className="border-b border-slate-100 dark:border-navy-700 px-5 py-4 flex items-center justify-between">
+          <div className="rounded-2xl border border-slate-200/60 dark:border-navy-700/60 bg-white/70 dark:bg-navy-800/60 backdrop-blur-md shadow-sm overflow-hidden">
+            <div className="border-b border-slate-100 dark:border-navy-700 px-6 py-4.5 flex items-center justify-between">
               <h3 className="font-display font-semibold text-slate-900 dark:text-white">
-                Scan history
+                Scan history logs
               </h3>
               {scans.length > 0 && (
                 <button
                   onClick={handleExport}
                   disabled={exportLoading}
-                  className="inline-flex items-center gap-1 text-xs font-semibold text-teal-600 dark:text-teal-400 hover:underline disabled:opacity-50"
+                  className="inline-flex items-center gap-1.5 text-xs font-semibold text-teal-600 dark:text-teal-400 hover:underline disabled:opacity-50"
                 >
                   <Download className="h-3.5 w-3.5" />
                   {exportLoading ? 'Exporting…' : 'Export CSV'}
@@ -220,50 +235,74 @@ export default function QRDetail() {
             </div>
 
             {scans.length === 0 ? (
-              <div className="p-10 text-center text-sm text-slate-500 dark:text-slate-400">
-                No scans recorded yet for this QR code.
+              <div className="p-12 text-center text-sm text-slate-500 dark:text-slate-400">
+                No scan entries recorded yet for this QR code.
               </div>
             ) : (
-              <div className="max-h-96 overflow-y-auto scrollbar-thin">
-                <table className="w-full text-left text-sm">
-                  <thead className="sticky top-0 bg-white dark:bg-navy-800">
-                    <tr className="border-b border-slate-100 dark:border-navy-700 text-slate-500 dark:text-slate-400">
-                      <th className="px-5 py-3 font-medium">Location</th>
-                      <th className="px-5 py-3 font-medium">GPS</th>
-                      <th className="px-5 py-3 font-medium">Time</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {scans.map((scan) => (
-                      <tr
-                        key={scan._id}
-                        className="border-b border-slate-50 dark:border-navy-700/60 last:border-0"
-                      >
-                        <td className="px-5 py-3 text-slate-600 dark:text-slate-300">
-                          {scan.city}, {scan.state}, {scan.country}
-                        </td>
-                        <td className="px-5 py-3">
-                          {scan.latitude != null ? (
-                            <a
-                              href={`https://www.google.com/maps?q=${scan.latitude},${scan.longitude}`}
-                              target="_blank"
-                              rel="noopener noreferrer"
-                              className="inline-flex items-center gap-1 text-teal-600 dark:text-teal-400 hover:underline"
-                            >
-                              <MapPin className="h-3.5 w-3.5" /> View
-                            </a>
-                          ) : (
-                            <span className="text-slate-400">—</span>
-                          )}
-                        </td>
-                        <td className="px-5 py-3 whitespace-nowrap text-slate-500 dark:text-slate-400">
-                          {formatTimestamp(scan.timestamp)}
-                        </td>
+              <>
+                <div className={`relative max-h-96 overflow-y-auto scrollbar-thin ${scansLoading ? 'opacity-50 pointer-events-none' : ''}`}>
+                  <table className="w-full text-left text-sm">
+                    <thead className="sticky top-0 bg-white dark:bg-navy-800 border-b border-slate-100 dark:border-navy-700">
+                      <tr className="text-slate-500 dark:text-slate-400">
+                        <th className="px-6 py-3.5 font-medium text-xs uppercase tracking-wider">Geographic Region</th>
+                        <th className="px-6 py-3.5 font-medium text-xs uppercase tracking-wider">GPS Coordinates</th>
+                        <th className="px-6 py-3.5 font-medium text-xs uppercase tracking-wider">Date & Time</th>
                       </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
+                    </thead>
+                    <tbody>
+                      {scans.map((scan) => (
+                        <tr
+                          key={scan._id}
+                          className="border-b border-slate-50 dark:border-navy-700/40 last:border-0 hover:bg-slate-50/50 dark:hover:bg-navy-700/20 transition-colors"
+                        >
+                          <td className="px-6 py-4 text-slate-650 dark:text-slate-350 font-medium">
+                            {scan.city}, {scan.state}, {scan.country}
+                          </td>
+                          <td className="px-6 py-4">
+                            {scan.latitude != null ? (
+                              <a
+                                href={`https://www.google.com/maps?q=${scan.latitude},${scan.longitude}`}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="inline-flex items-center gap-1.5 text-teal-650 dark:text-teal-400 hover:text-teal-500 font-semibold"
+                              >
+                                <MapPin className="h-3.5 w-3.5" /> View Coordinates
+                              </a>
+                            ) : (
+                              <span className="text-slate-400">—</span>
+                            )}
+                          </td>
+                          <td className="px-6 py-4 whitespace-nowrap text-slate-550 dark:text-slate-450 text-xs">
+                            {formatTimestamp(scan.timestamp)}
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+
+                <div className="flex items-center justify-between border-t border-slate-100 dark:border-navy-700 px-6 py-4">
+                  <p className="text-xs font-semibold text-slate-400 dark:text-slate-500 uppercase tracking-wider">
+                    Page {pagination.page} of {pagination.pages} ({pagination.total} entries)
+                  </p>
+                  <div className="flex gap-1.5">
+                    <button
+                      onClick={() => handlePageChange(pagination.page - 1)}
+                      disabled={pagination.page <= 1 || scansLoading}
+                      className="rounded-lg border border-slate-200 dark:border-navy-600 px-3 py-1.5 text-xs font-semibold text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-navy-700 transition-colors disabled:opacity-50"
+                    >
+                      Prev
+                    </button>
+                    <button
+                      onClick={() => handlePageChange(pagination.page + 1)}
+                      disabled={pagination.page >= pagination.pages || scansLoading}
+                      className="rounded-lg border border-slate-200 dark:border-navy-600 px-3 py-1.5 text-xs font-semibold text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-navy-700 transition-colors disabled:opacity-50"
+                    >
+                      Next
+                    </button>
+                  </div>
+                </div>
+              </>
             )}
           </div>
         </div>

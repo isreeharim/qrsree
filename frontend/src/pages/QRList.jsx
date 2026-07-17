@@ -81,14 +81,14 @@ export default function QRList() {
   };
 
   return (
-    <div className="animate-fade-in">
-      <div className="mb-5 flex items-center justify-between">
-        <p className="text-sm text-slate-500 dark:text-slate-400">
-          {qrCodes.length} QR code{qrCodes.length === 1 ? '' : 's'}
+    <div className="animate-fade-in space-y-6">
+      <div className="flex items-center justify-between">
+        <p className="text-sm font-medium text-slate-500 dark:text-slate-400">
+          {qrCodes.length} QR code{qrCodes.length === 1 ? '' : 's'} total
         </p>
         <button
           onClick={() => setModalState({ open: true, mode: 'create', data: null })}
-          className="inline-flex items-center gap-1.5 rounded-lg bg-teal-500 px-4 py-2 text-sm font-medium text-white hover:bg-teal-600 transition-colors"
+          className="inline-flex items-center gap-1.5 rounded-xl bg-teal-500 hover:bg-teal-400 px-4 py-2.5 text-sm font-semibold text-navy-950 shadow-lg shadow-teal-500/10 hover:shadow-teal-500/20 active:scale-[0.98] transition-all"
         >
           <Plus className="h-4 w-4" />
           New QR code
@@ -100,10 +100,10 @@ export default function QRList() {
           <Loader size="lg" />
         </div>
       ) : qrCodes.length === 0 ? (
-        <div className="module-grid rounded-2xl border border-dashed border-slate-300 dark:border-navy-600 p-14 text-center text-slate-400">
-          <QrCodeIcon className="mx-auto mb-3 h-10 w-10 text-slate-300 dark:text-navy-600" />
-          <p className="text-slate-600 dark:text-slate-300 font-medium">No QR codes yet</p>
-          <p className="mt-1 text-sm">Create one to get a scannable link you can redirect anytime.</p>
+        <div className="rounded-2xl border border-dashed border-slate-200/80 dark:border-navy-700/60 bg-white/40 dark:bg-navy-900/20 backdrop-blur-sm p-16 text-center text-slate-400">
+          <QrCodeIcon className="mx-auto mb-3 h-10 w-10 text-slate-350 dark:text-navy-600" />
+          <p className="text-slate-650 dark:text-slate-300 font-semibold">No dynamic QR codes yet</p>
+          <p className="mt-1 text-sm text-slate-450 dark:text-slate-500">Create one to get started with editable links and scan statistics.</p>
         </div>
       ) : (
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
