@@ -15,7 +15,8 @@ import UserDetail from './pages/UserDetail';
 import NotFound from './pages/NotFound';
 
 function AdminRoute({ children }) {
-  const { isAdmin } = useAuth();
+  const { isAdmin, verifying } = useAuth();
+  if (verifying) return null; // Wait for token verification before deciding
   return isAdmin ? children : <Navigate to="/dashboard" replace />;
 }
 
