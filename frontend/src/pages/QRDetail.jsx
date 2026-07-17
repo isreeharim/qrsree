@@ -7,6 +7,7 @@ import QRFormModal from '../components/QRFormModal';
 import ConfirmDialog from '../components/ConfirmDialog';
 import Loader from '../components/Loader';
 import { useToast } from '../context/ToastContext';
+import { useIsMobile } from '../hooks/useIsMobile';
 
 function formatTimestamp(ts) {
   return new Date(ts).toLocaleString(undefined, { dateStyle: 'medium', timeStyle: 'short' });
@@ -26,6 +27,7 @@ export default function QRDetail() {
   const [exportLoading, setExportLoading] = useState(false);
   const [pagination, setPagination] = useState({ total: 0, page: 1, limit: 50, pages: 1 });
   const [scansLoading, setScansLoading] = useState(false);
+  const isMobile = useIsMobile();
 
   const load = useCallback(async () => {
     try {
@@ -233,7 +235,6 @@ export default function QRDetail() {
                 </button>
               )}
             </div>
-
             {scans.length === 0 ? (
               <div className="p-12 text-center text-sm text-slate-500 dark:text-slate-400">
                 No scan entries recorded yet for this QR code.
@@ -241,44 +242,79 @@ export default function QRDetail() {
             ) : (
               <>
                 <div className={`relative max-h-96 overflow-y-auto scrollbar-thin ${scansLoading ? 'opacity-50 pointer-events-none' : ''}`}>
-                  <table className="w-full text-left text-sm">
-                    <thead className="sticky top-0 bg-white dark:bg-navy-800 border-b border-slate-100 dark:border-navy-700">
-                      <tr className="text-slate-500 dark:text-slate-400">
-                        <th className="px-6 py-3.5 font-medium text-xs uppercase tracking-wider">Geographic Region</th>
-                        <th className="px-6 py-3.5 font-medium text-xs uppercase tracking-wider">GPS Coordinates</th>
-                        <th className="px-6 py-3.5 font-medium text-xs uppercase tracking-wider">Date & Time</th>
-                      </tr>
-                    </thead>
-                    <tbody>
+                  {isMobile ? (
+                    <div className="divide-y divide-slate-100 dark:divide-navy-700/60">
                       {scans.map((scan) => (
-                        <tr
+                        <div
                           key={scan._id}
-                          className="border-b border-slate-50 dark:border-navy-700/40 last:border-0 hover:bg-slate-50/50 dark:hover:bg-navy-700/20 transition-colors"
+                          className="p-4 hover:bg-slate-50/50 dark:hover:bg-navy-700/20 transition-colors flex flex-col gap-1.5"
                         >
-                          <td className="px-6 py-4 text-slate-650 dark:text-slate-350 font-medium">
-                            {scan.city}, {scan.state}, {scan.country}
-                          </td>
-                          <td className="px-6 py-4">
+                          <div className="flex items-center justify-between gap-2">
+                            <div className="font-semibold text-sm text-slate-800 dark:text-slate-100 truncate">
+                              {scan.city ? `${scan.city}, ` : ''}{scan.state ? `${scan.state}, ` : ''}{scan.country}
+                            </div>
+                            <span className="text-[10px] text-slate-450 dark:text-slate-500 whitespace-nowrap">
+                              {formatTimestamp(scan.timestamp)}
+                            </span>
+                          </div>
+
+                          <div className="flex items-center justify-between gap-2 text-xs">
                             {scan.latitude != null ? (
                               <a
                                 href={`https://www.google.com/maps?q=${scan.latitude},${scan.longitude}`}
                                 target="_blank"
                                 rel="noopener noreferrer"
-                                className="inline-flex items-center gap-1.5 text-teal-650 dark:text-teal-400 hover:text-teal-500 font-semibold"
+                                className="inline-flex items-center gap-1.5 text-teal-655 dark:text-teal-400 hover:text-teal-500 font-semibold"
                               >
                                 <MapPin className="h-3.5 w-3.5" /> View Coordinates
                               </a>
                             ) : (
                               <span className="text-slate-400">—</span>
                             )}
-                          </td>
-                          <td className="px-6 py-4 whitespace-nowrap text-slate-550 dark:text-slate-450 text-xs">
-                            {formatTimestamp(scan.timestamp)}
-                          </td>
-                        </tr>
+                          </div>
+                        </div>
                       ))}
-                    </tbody>
-                  </table>
+                    </div>
+                  ) : (
+                    <table className="w-full text-left text-sm">
+                      <thead className="sticky top-0 bg-white dark:bg-navy-800 border-b border-slate-100 dark:border-navy-700">
+                        <tr className="text-slate-500 dark:text-slate-400">
+                          <th className="px-6 py-3.5 font-medium text-xs uppercase tracking-wider">Geographic Region</th>
+                          <th className="px-6 py-3.5 font-medium text-xs uppercase tracking-wider">GPS Coordinates</th>
+                          <th className="px-6 py-3.5 font-medium text-xs uppercase tracking-wider">Date & Time</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {scans.map((scan) => (
+                          <tr
+                            key={scan._id}
+                            className="border-b border-slate-50 dark:border-navy-700/40 last:border-0 hover:bg-slate-50/50 dark:hover:bg-navy-700/20 transition-colors"
+                          >
+                            <td className="px-6 py-4 text-slate-655 dark:text-slate-350 font-medium">
+                              {scan.city}, {scan.state}, {scan.country}
+                            </td>
+                            <td className="px-6 py-4">
+                              {scan.latitude != null ? (
+                                <a
+                                  href={`https://www.google.com/maps?q=${scan.latitude},${scan.longitude}`}
+                                  target="_blank"
+                                  rel="noopener noreferrer"
+                                  className="inline-flex items-center gap-1.5 text-teal-655 dark:text-teal-400 hover:text-teal-500 font-semibold"
+                                >
+                                  <MapPin className="h-3.5 w-3.5" /> View Coordinates
+                                </a>
+                              ) : (
+                                <span className="text-slate-400">—</span>
+                              )}
+                            </td>
+                            <td className="px-6 py-4 whitespace-nowrap text-slate-550 dark:text-slate-450 text-xs">
+                              {formatTimestamp(scan.timestamp)}
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  )}
                 </div>
 
                 <div className="flex items-center justify-between border-t border-slate-100 dark:border-navy-700 px-6 py-4">

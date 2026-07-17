@@ -6,6 +6,7 @@ import StatCard from '../components/StatCard';
 import Loader from '../components/Loader';
 import { useToast } from '../context/ToastContext';
 import { useAuth } from '../context/AuthContext';
+import { useIsMobile } from '../hooks/useIsMobile';
 
 function formatTimestamp(ts) {
   return new Date(ts).toLocaleString(undefined, {
@@ -19,6 +20,7 @@ export default function Dashboard() {
   const [loading, setLoading] = useState(true);
   const toast = useToast();
   const { isAdmin } = useAuth();
+  const isMobile = useIsMobile();
 
   const loadStats = useCallback(async () => {
     try {
@@ -92,6 +94,40 @@ export default function Dashboard() {
             <p className="text-sm text-slate-450 dark:text-slate-400">
               No scan logs captured yet. Dynamic QR activities will display here.
             </p>
+          </div>
+        ) : isMobile ? (
+          <div className="divide-y divide-slate-100 dark:divide-navy-700/60">
+            {stats.recentScans.map((scan) => (
+              <div
+                key={scan.id}
+                className="p-4 hover:bg-slate-50/50 dark:hover:bg-navy-700/20 transition-colors flex flex-col gap-1.5"
+              >
+                <div className="flex items-center justify-between gap-2">
+                  <div className="font-bold text-sm text-slate-800 dark:text-slate-100 truncate">
+                    {scan.qrTitle}
+                  </div>
+                  <span className="text-[10px] text-slate-400 dark:text-slate-500 font-medium whitespace-nowrap">
+                    {formatTimestamp(scan.timestamp)}
+                  </span>
+                </div>
+
+                <div className="flex items-center justify-between gap-2 text-xs">
+                  <div className="text-slate-500 dark:text-slate-400 truncate font-medium">
+                    {scan.city ? `${scan.city}, ` : ''}{scan.country}
+                  </div>
+                  {scan.latitude != null ? (
+                    <span className="inline-flex items-center gap-1 rounded-full bg-teal-500/10 px-2 py-0.5 text-[10px] font-bold text-teal-600 dark:text-teal-400 border border-teal-500/20">
+                      GPS Active
+                    </span>
+                  ) : (
+                    <span className="text-slate-400 text-[10px]">—</span>
+                  )}
+                </div>
+                <div className="font-mono text-[9px] text-teal-600 dark:text-teal-400">
+                  /q/{scan.shortCode}
+                </div>
+              </div>
+            ))}
           </div>
         ) : (
           <div className="overflow-x-auto scrollbar-thin">

@@ -11,6 +11,7 @@ import ConfirmDialog from '../components/ConfirmDialog';
 import Loader from '../components/Loader';
 import { useToast } from '../context/ToastContext';
 import { useAuth } from '../context/AuthContext';
+import { useIsMobile } from '../hooks/useIsMobile';
 
 function formatDate(ts) {
   return new Date(ts).toLocaleDateString(undefined, { year: 'numeric', month: 'short', day: 'numeric' });
@@ -24,6 +25,7 @@ const TABS = [
 
 export default function UserList() {
   const [activeTab, setActiveTab] = useState('users');
+  const isMobile = useIsMobile();
 
   // --- Users state ---
   const [users, setUsers] = useState([]);
@@ -237,6 +239,60 @@ export default function UserList() {
               <Users className="mx-auto mb-3 h-10 w-10 text-slate-300 dark:text-navy-600" />
               <p className="text-slate-600 dark:text-slate-300 font-medium">No users found</p>
             </div>
+          ) : isMobile ? (
+            <div className="space-y-3">
+              {filteredUsers.map((u) => (
+                <div
+                  key={u.id}
+                  className="p-4 hover:bg-slate-50/50 dark:hover:bg-navy-700/20 transition-colors flex flex-col gap-2 bg-white/70 dark:bg-navy-800/60 backdrop-blur-md rounded-xl border border-slate-200/40 dark:border-navy-700/40"
+                >
+                  <div className="flex items-center justify-between gap-2">
+                    <div className="font-bold text-sm text-slate-800 dark:text-slate-100">
+                      {u.username || '—'}
+                    </div>
+                    {u.role === 'admin' ? (
+                      <span className="inline-flex items-center gap-1 rounded-full bg-red-150 dark:bg-red-500/10 px-2.5 py-0.5 text-[10px] font-semibold text-red-600 dark:text-red-400">
+                        Admin
+                      </span>
+                    ) : (
+                      <span className="inline-flex items-center gap-1 rounded-full bg-teal-150 dark:bg-teal-500/10 px-2.5 py-0.5 text-[10px] font-semibold text-teal-600 dark:text-teal-400">
+                        User
+                      </span>
+                    )}
+                  </div>
+                  <div className="text-xs text-slate-500 dark:text-slate-400">
+                    Email: {u.email}
+                  </div>
+                  <div className="text-xs text-slate-500 dark:text-slate-400">
+                    Dept: {u.department || '—'}
+                  </div>
+                  <div className="flex items-center justify-between gap-2 border-t border-slate-100 dark:border-navy-700/65 pt-2 mt-1">
+                    <div className="text-xs font-semibold text-slate-650 dark:text-slate-350">
+                      QRs Created: {u.qrCount}
+                    </div>
+                    <div className="flex gap-2">
+                      <Link to={`/users/${u.id}`} className="rounded-lg p-1.5 text-slate-400 hover:bg-slate-100 dark:hover:bg-navy-700">
+                        <Eye className="h-4 w-4" />
+                      </Link>
+                      {u.id !== currentUser?.id && (
+                        <>
+                          <button
+                            onClick={() => handleToggleRole(u)}
+                            disabled={updatingId === u.id}
+                            className="rounded-lg border border-slate-200 dark:border-navy-600 px-2.5 py-1 text-[10px] font-semibold text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-navy-700 transition-colors"
+                          >
+                            {updatingId === u.id ? '...' : u.role === 'admin' ? 'Make User' : 'Make Admin'}
+                          </button>
+                          <button onClick={() => setDeleteTarget(u)} className="rounded-lg p-1.5 text-slate-400 hover:bg-slate-100 hover:text-red-500">
+                            <Trash2 className="h-4 w-4" />
+                          </button>
+                        </>
+                      )}
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
           ) : (
             <div className="rounded-2xl border border-slate-200/60 dark:border-navy-700/60 bg-white/70 dark:bg-navy-800/60 backdrop-blur-md shadow-sm overflow-hidden">
               <div className="overflow-x-auto scrollbar-thin">
@@ -350,6 +406,57 @@ export default function UserList() {
             <div className="rounded-2xl border border-dashed border-slate-300 dark:border-navy-600 p-14 text-center">
               <QrCode className="mx-auto mb-3 h-10 w-10 text-slate-300 dark:text-navy-600" />
               <p className="text-slate-600 dark:text-slate-300 font-medium">No QR codes found</p>
+            </div>
+          ) : isMobile ? (
+            <div className="space-y-3">
+              {filteredQrCodes.map((qr) => (
+                <div
+                  key={qr.id}
+                  className="p-4 hover:bg-slate-50/50 dark:hover:bg-navy-700/20 transition-colors flex flex-col gap-2 bg-white/70 dark:bg-navy-800/60 backdrop-blur-md rounded-xl border border-slate-200/40 dark:border-navy-700/40"
+                >
+                  <div className="flex items-center justify-between gap-2">
+                    <div className="font-bold text-sm text-slate-800 dark:text-slate-100 truncate max-w-[200px]">
+                      {qr.title}
+                    </div>
+                    {qr.isActive ? (
+                      <span className="inline-flex items-center rounded-full bg-emerald-150 dark:bg-emerald-500/10 px-2.5 py-0.5 text-[10px] font-semibold text-emerald-700 dark:text-emerald-400">
+                        Active
+                      </span>
+                    ) : (
+                      <span className="inline-flex items-center rounded-full bg-red-150 dark:bg-red-500/10 px-2.5 py-0.5 text-[10px] font-semibold text-red-600 dark:text-red-400">
+                        Disabled
+                      </span>
+                    )}
+                  </div>
+                  <div className="text-xs text-slate-500 dark:text-slate-400">
+                    Owner: {qr.createdBy?.username || '—'}
+                  </div>
+                  <div className="font-mono text-[10px] text-teal-600 dark:text-teal-400">
+                    /q/{qr.shortCode}
+                  </div>
+                  <div className="flex items-center justify-between gap-2 border-t border-slate-100 dark:border-navy-700/65 pt-2 mt-1">
+                    <div className="flex items-center gap-1 text-xs text-slate-650 dark:text-slate-350">
+                      <ScanLine className="h-3.5 w-3.5" />
+                      {qr.scanCount} scans
+                    </div>
+                    <div className="flex gap-2">
+                      <Link to={`/qrcodes/${qr.id}`} className="rounded-lg p-1.5 text-slate-400 hover:bg-slate-100 dark:hover:bg-navy-700">
+                        <ExternalLink className="h-4 w-4" />
+                      </Link>
+                      <button
+                        onClick={() => handleQrToggle(qr)}
+                        disabled={qrTogglingId === qr.id}
+                        className={`rounded-lg p-1.5 transition-colors ${qr.isActive ? 'text-emerald-500 hover:bg-emerald-50 dark:hover:bg-emerald-500/10' : 'text-red-400 hover:bg-red-50 dark:hover:bg-red-500/10'}`}
+                      >
+                        <Power className="h-4 w-4" />
+                      </button>
+                      <button onClick={() => setQrDeleteTarget(qr)} className="rounded-lg p-1.5 text-slate-400 hover:bg-slate-100 hover:text-red-500">
+                        <Trash2 className="h-4 w-4" />
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              ))}
             </div>
           ) : (
             <div className="rounded-2xl border border-slate-200/60 dark:border-navy-700/60 bg-white/70 dark:bg-navy-800/60 backdrop-blur-md shadow-sm overflow-hidden">
