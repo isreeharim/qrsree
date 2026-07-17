@@ -1,7 +1,143 @@
+import { useState, useRef, useCallback } from 'react';
 import { Link } from 'react-router-dom';
 import { QrCode, ArrowRight, RefreshCw, BarChart3, Shield, Users, MapPin, Zap } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 
+/* ─── Cursor-aware QR mockup card ─────────────────────────────────────── */
+function QRHeroCard() {
+  const cardRef = useRef(null);
+  const [tilt, setTilt] = useState({ x: 0, y: 0 });
+  const [glow, setGlow] = useState({ x: 50, y: 50, visible: false });
+
+  const handleMouseMove = useCallback((e) => {
+    const card = cardRef.current;
+    if (!card) return;
+    const rect = card.getBoundingClientRect();
+    const cx = rect.left + rect.width / 2;
+    const cy = rect.top + rect.height / 2;
+    const dx = e.clientX - cx;
+    const dy = e.clientY - cy;
+    // tilt max ±12deg
+    const tiltX = -(dy / (rect.height / 2)) * 12;
+    const tiltY = (dx / (rect.width / 2)) * 12;
+    // spotlight position as %
+    const glowX = ((e.clientX - rect.left) / rect.width) * 100;
+    const glowY = ((e.clientY - rect.top) / rect.height) * 100;
+    setTilt({ x: tiltX, y: tiltY });
+    setGlow({ x: glowX, y: glowY, visible: true });
+  }, []);
+
+  const handleMouseLeave = useCallback(() => {
+    setTilt({ x: 0, y: 0 });
+    setGlow((g) => ({ ...g, visible: false }));
+  }, []);
+
+  return (
+    <div
+      ref={cardRef}
+      onMouseMove={handleMouseMove}
+      onMouseLeave={handleMouseLeave}
+      style={{
+        transform: `perspective(900px) rotateX(${tilt.x}deg) rotateY(${tilt.y}deg)`,
+        transition: glow.visible ? 'transform 0.08s linear' : 'transform 0.45s ease',
+      }}
+      className="relative w-72 sm:w-80 h-[450px] rounded-[40px] cursor-none select-none"
+    >
+      {/* Outer glowing border ring */}
+      <div
+        className="absolute inset-0 rounded-[40px] pointer-events-none z-20 transition-opacity duration-300"
+        style={{
+          opacity: glow.visible ? 1 : 0,
+          background: `radial-gradient(200px circle at ${glow.x}% ${glow.y}%, rgba(20,250,200,0.18) 0%, transparent 70%)`,
+        }}
+      />
+      {/* Shimmer border */}
+      <div
+        className="absolute inset-0 rounded-[40px] pointer-events-none z-20 transition-opacity duration-300"
+        style={{
+          opacity: glow.visible ? 1 : 0,
+          boxShadow: `0 0 0 1.5px rgba(20,250,200,0.35), 0 0 40px 4px rgba(20,250,200,0.12)`,
+        }}
+      />
+
+      {/* Custom cursor dot */}
+      {glow.visible && (
+        <div
+          className="absolute z-30 pointer-events-none w-5 h-5 rounded-full border-2 border-teal-400/80 bg-teal-400/20 backdrop-blur-sm -translate-x-1/2 -translate-y-1/2 transition-none"
+          style={{ left: `${glow.x}%`, top: `${glow.y}%` }}
+        />
+      )}
+
+      {/* Phone shell */}
+      <div className="absolute inset-0 rounded-[40px] border-4 border-navy-700 bg-navy-900 p-3 shadow-2xl overflow-hidden z-10">
+        {/* Notch */}
+        <div className="absolute top-0 inset-x-0 h-6 bg-navy-900 flex justify-center items-center z-10">
+          <div className="w-20 h-4 bg-navy-950 rounded-full" />
+        </div>
+
+        <div className="h-full rounded-[30px] bg-navy-950 border border-navy-800 p-5 pt-8 flex flex-col justify-between">
+          <div className="space-y-4">
+            <div className="flex items-center justify-between">
+              <span className="text-xs text-teal-400 font-semibold uppercase tracking-wider">Dynamic QR</span>
+              <span className="h-2 w-2 rounded-full bg-teal-400 animate-pulse" />
+            </div>
+
+            {/* QR display */}
+            <div className="bg-navy-900/80 border border-navy-800 rounded-2xl p-4 flex flex-col items-center gap-4">
+              <div className="bg-white p-3 rounded-xl relative overflow-hidden group-hover:shadow-[0_0_20px_rgba(20,250,200,0.3)] transition-shadow">
+                {/* QR grid */}
+                <div className="grid grid-cols-7 gap-[2.5px] h-28 w-28">
+                  {[
+                    1,1,1,0,1,1,1,
+                    1,0,1,0,1,0,1,
+                    1,1,1,0,1,1,1,
+                    0,0,0,0,0,1,0,
+                    1,0,1,1,0,0,1,
+                    0,1,0,1,1,0,0,
+                    1,1,0,0,1,1,1,
+                  ].map((filled, i) => (
+                    <span
+                      key={i}
+                      className={`rounded-[1.5px] ${filled ? 'bg-navy-950' : 'bg-transparent'}`}
+                    />
+                  ))}
+                </div>
+                {/* Inner spotlight layer inside QR white box */}
+                <div
+                  className="absolute inset-0 rounded-xl pointer-events-none transition-opacity duration-200"
+                  style={{
+                    opacity: glow.visible ? 0.7 : 0,
+                    background: `radial-gradient(80px circle at ${glow.x}% ${glow.y}%, rgba(20,250,200,0.15) 0%, transparent 80%)`,
+                  }}
+                />
+              </div>
+              <div className="text-center">
+                <p className="text-xs font-mono text-teal-400">/q/xY8zT2</p>
+                <p className="text-xs text-slate-400 mt-1">Printed on poster</p>
+              </div>
+            </div>
+          </div>
+
+          {/* Bottom destination */}
+          <div className="space-y-3">
+            <div className="text-xs text-slate-400">Current Destination:</div>
+            <div className="bg-navy-900 border border-navy-800 rounded-xl p-3 text-xs font-mono truncate text-sky-400">
+              https://qr.sreeharim.site/
+            </div>
+            <div className="flex justify-center">
+              <div className="inline-flex items-center gap-1.5 text-[10px] text-teal-400 font-semibold bg-teal-500/10 border border-teal-500/20 px-3 py-1 rounded-full animate-bounce">
+                <RefreshCw className="h-3 w-3 animate-spin" />
+                Redirects Instantly
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+/* ─── Main Home page ────────────────────────────────────────────────────── */
 export default function Home() {
   const { isAuthenticated } = useAuth();
 
@@ -92,50 +228,9 @@ export default function Home() {
             </div>
           </div>
 
+          {/* ← Cursor-overlay QR hero card */}
           <div className="lg:col-span-5 flex justify-center animate-fade-in">
-            {/* Visual Phone/Card mockup representing QR redirects */}
-            <div className="relative w-72 sm:w-80 h-[450px] rounded-[40px] border-4 border-navy-700 bg-navy-900 p-3 shadow-2xl relative overflow-hidden">
-              <div className="absolute top-0 inset-x-0 h-6 bg-navy-900 flex justify-center items-center z-10">
-                <div className="w-20 h-4 bg-navy-950 rounded-full" />
-              </div>
-              <div className="h-full rounded-[30px] bg-navy-950 border border-navy-800 p-5 pt-8 flex flex-col justify-between">
-                <div className="space-y-4">
-                  <div className="flex items-center justify-between">
-                    <span className="text-xs text-teal-400 font-semibold uppercase tracking-wider">Dynamic QR</span>
-                    <span className="h-2 w-2 rounded-full bg-teal-400 animate-pulse" />
-                  </div>
-                  
-                  <div className="bg-navy-900/80 border border-navy-800 rounded-2xl p-4 flex flex-col items-center gap-4">
-                    <div className="bg-white p-3 rounded-xl">
-                      {/* Placeholder lookalike static premium QR canvas representation */}
-                      <div className="grid grid-cols-5 gap-[3px] h-28 w-28">
-                        {[1,0,1,1,1,0,1,0,0,1,1,1,0,1,0,0,0,1,1,1,1,0,1,0,1].map((filled, i) => (
-                          <span key={i} className={`rounded-sm ${filled ? 'bg-navy-950' : 'bg-transparent'}`} />
-                        ))}
-                      </div>
-                    </div>
-                    <div className="text-center">
-                      <p className="text-xs font-mono text-teal-400">/q/xY8zT2</p>
-                      <p className="text-xs text-slate-400 mt-1">Printed on poster</p>
-                    </div>
-                  </div>
-                </div>
-
-                <div className="space-y-3">
-                  <div className="text-xs text-slate-400">Current Destination:</div>
-                  <div className="bg-navy-900 border border-navy-800 rounded-xl p-3 text-xs font-mono truncate text-sky-400">
-                    https://qr.sreeharim.site/
-                  </div>
-                  
-                  <div className="flex justify-center">
-                    <div className="inline-flex items-center gap-1.5 text-[10px] text-teal-400 font-semibold bg-teal-500/10 border border-teal-500/20 px-3 py-1 rounded-full animate-bounce">
-                      <RefreshCw className="h-3 w-3 animate-spin" />
-                      Redirects Instantly
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
+            <QRHeroCard />
           </div>
         </div>
       </section>
