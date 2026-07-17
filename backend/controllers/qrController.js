@@ -75,7 +75,7 @@ const getAllQr = asyncHandler(async (req, res) => {
  * Returns a single QR code by its Mongo _id. Scoped by ownership.
  */
 const getQrById = asyncHandler(async (req, res) => {
-  const qr = await QRCode.findById(req.params.id);
+  const qr = await QRCode.findById(req.params.id).populate('createdBy', 'username email');
   if (!qr) throw new AppError('QR code not found', 404);
 
   if (req.user.role !== 'admin' && qr.createdBy.toString() !== req.user._id.toString()) {
@@ -92,7 +92,7 @@ const getQrById = asyncHandler(async (req, res) => {
 const updateQr = asyncHandler(async (req, res) => {
   const { title, destinationUrl, expiresAt } = req.body;
 
-  const qr = await QRCode.findById(req.params.id);
+  const qr = await QRCode.findById(req.params.id).populate('createdBy', 'username email');
   if (!qr) throw new AppError('QR code not found', 404);
 
   if (req.user.role !== 'admin' && qr.createdBy.toString() !== req.user._id.toString()) {
@@ -127,7 +127,7 @@ const deleteQr = asyncHandler(async (req, res) => {
 });
 
 const toggleQrStatus = asyncHandler(async (req, res) => {
-  const qr = await QRCode.findById(req.params.id);
+  const qr = await QRCode.findById(req.params.id).populate('createdBy', 'username email');
   if (!qr) throw new AppError('QR code not found', 404);
 
   if (req.user.role !== 'admin' && qr.createdBy.toString() !== req.user._id.toString()) {

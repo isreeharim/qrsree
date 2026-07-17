@@ -18,6 +18,7 @@ export function AuthProvider({ children }) {
       setVerifying(false);
       return;
     }
+    const timeout = setTimeout(() => setVerifying(false), 8000); // Fallback: stop verifying after 8s
     authApi.getMe()
       .then((data) => {
         const freshUser = data.user;
@@ -25,15 +26,27 @@ export function AuthProvider({ children }) {
         setUser(freshUser);
       })
       .catch(() => {
-        // Token is invalid/expired — clear everything
         localStorage.removeItem('qr_admin_token');
         localStorage.removeItem('qr_admin_user');
         setToken(null);
         setUser(null);
       })
-      .finally(() => setVerifying(false));
+      .finally(() => {
+        clearTimeout(timeout);
+        setVerifying(false);
+      });
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []); // only on mount
+
+  // Listen for 401 events dispatched by the axios interceptor and clear React state
+  useEffect(() => {
+    const handler = () => {
+      setToken(null);
+      setUser(null);
+    };
+    window.addEventListener('auth:logout', handler);
+    return () => window.removeEventListener('auth:logout', handler);
+  }, []);
 
   const login = useCallback(async (username, password) => {
     const data = await authApi.login(username, password);

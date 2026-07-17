@@ -2,6 +2,7 @@ const User = require('../models/User');
 const QRCode = require('../models/QRCode');
 const ScanLog = require('../models/ScanLog');
 const Settings = require('../models/Settings');
+const { buildShortUrl } = require('./qrController');
 const AppError = require('../utils/AppError');
 const asyncHandler = require('../utils/asyncHandler');
 
@@ -32,7 +33,7 @@ const getUserById = asyncHandler(async (req, res) => {
 
   const qrCodes = await QRCode.find({ createdBy: user._id }).sort({ createdAt: -1 });
 
-  const { buildShortUrl } = require('./qrController');
+
 
   res.status(200).json({
     success: true,

@@ -47,7 +47,7 @@ export default function QRCard({ qr, onEdit, onDelete, onToggle }) {
 
         <div className="flex items-center gap-1">
           <button
-            onClick={() => onToggle(qr)}
+            onClick={() => onToggle?.(qr)}
             title={qr.isActive ? 'Disable QR' : 'Enable QR'}
             className={`rounded-lg p-1.5 transition-colors ${
               qr.isActive

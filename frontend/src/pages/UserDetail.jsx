@@ -2,7 +2,7 @@ import { useState, useEffect, useCallback } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
 import { ArrowLeft, Mail, Calendar, ShieldAlert, ShieldCheck, QrCode as QrCodeIcon, Briefcase } from 'lucide-react';
 import { getUserById } from '../api/users';
-import { updateQrCode, deleteQrCode } from '../api/qr';
+import { updateQrCode, deleteQrCode, toggleQrStatus } from '../api/qr';
 import QRCard from '../components/QRCard';
 import QRFormModal from '../components/QRFormModal';
 import ConfirmDialog from '../components/ConfirmDialog';
@@ -55,6 +55,19 @@ export default function UserDetail() {
       setModalState({ open: false, mode: 'edit', data: null });
     } catch (err) {
       toast.error(err.response?.data?.message || 'Failed to update QR code');
+    }
+  };
+
+  const handleToggle = async (qr) => {
+    try {
+      const updated = await toggleQrStatus(qr.id);
+      setUserDetail((prev) => ({
+        ...prev,
+        qrCodes: prev.qrCodes.map((q) => (q.id === updated.id ? { ...q, isActive: updated.isActive } : q)),
+      }));
+      toast.success(updated.isActive ? 'QR code enabled' : 'QR code disabled');
+    } catch (err) {
+      toast.error(err.response?.data?.message || 'Failed to toggle QR code status');
     }
   };
 
@@ -156,6 +169,7 @@ export default function UserDetail() {
                 qr={qr}
                 onEdit={(target) => setModalState({ open: true, mode: 'edit', data: target })}
                 onDelete={setDeleteTarget}
+                onToggle={handleToggle}
               />
             ))}
           </div>

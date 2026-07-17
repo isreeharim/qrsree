@@ -276,7 +276,7 @@ export default function UserList() {
                             <Link to={`/users/${u.id}`} title="View user" className="rounded-lg p-1.5 text-slate-400 hover:bg-slate-100 hover:text-slate-600 dark:hover:bg-navy-700 dark:hover:text-slate-200 transition-colors">
                               <Eye className="h-4 w-4" />
                             </Link>
-                            {u.id !== currentUser.id && (
+                            {u.id !== currentUser?.id && (
                               <>
                                 <button
                                   onClick={() => handleToggleRole(u)}
@@ -311,7 +311,19 @@ export default function UserList() {
             </p>
             <div className="flex items-center gap-2">
               <button
-                onClick={() => { setQrLoaded(false); loadQrCodes(); }}
+                onClick={async () => {
+                  setQrLoading(true);
+                  setQrLoaded(false);
+                  try {
+                    const data = await getAllQrCodes();
+                    setQrCodes(data);
+                    setQrLoaded(true);
+                  } catch (err) {
+                    toast.error(err.response?.data?.message || 'Failed to refresh QR codes');
+                  } finally {
+                    setQrLoading(false);
+                  }
+                }}
                 className="rounded-lg p-2 text-slate-400 hover:bg-slate-100 dark:hover:bg-navy-700 transition-colors"
                 title="Refresh"
               >

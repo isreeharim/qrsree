@@ -43,6 +43,12 @@ export default function Dashboard() {
     );
   }
 
+  if (!stats) return (
+    <div className="flex h-64 items-center justify-center">
+      <p className="text-slate-500 dark:text-slate-400">Failed to load dashboard data. Please refresh the page.</p>
+    </div>
+  );
+
   return (
     <div className="animate-fade-in space-y-6">
       <div className={`grid grid-cols-1 gap-4 ${isAdmin ? 'sm:grid-cols-3' : 'sm:grid-cols-2'}`}>

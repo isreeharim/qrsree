@@ -32,7 +32,7 @@ const register = asyncHandler(async (req, res) => {
     username: username.toLowerCase(),
     email: email.toLowerCase(),
     password,
-    department: department.trim(),
+    department: department?.trim() || '',
   });
 
   const token = generateToken(user);
