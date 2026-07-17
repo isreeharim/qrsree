@@ -113,7 +113,7 @@ export default function UserDetail() {
         <div>
           <div className="flex items-center gap-3">
             <h2 className="font-display text-xl font-bold text-slate-900 dark:text-white">
-              {userDetail.username}
+              {userDetail.username || '—'}
             </h2>
             {userDetail.role === 'admin' ? (
               <span className="inline-flex items-center gap-1 rounded-full bg-red-100 dark:bg-red-500/10 px-2.5 py-0.5 text-xs font-semibold text-red-600 dark:text-red-400">

@@ -179,8 +179,8 @@ export default function UserList() {
 
   const filteredUsers = users.filter(
     (u) =>
-      u.username.toLowerCase().includes(search.toLowerCase()) ||
-      u.email.toLowerCase().includes(search.toLowerCase())
+      (u.username || '').toLowerCase().includes(search.toLowerCase()) ||
+      (u.email || '').toLowerCase().includes(search.toLowerCase())
   );
 
   const filteredQrCodes = qrCodes.filter(
@@ -255,7 +255,7 @@ export default function UserList() {
                   <tbody>
                     {filteredUsers.map((u) => (
                       <tr key={u.id} className="border-b border-slate-50 dark:border-navy-700/60 last:border-0 hover:bg-slate-50/50 dark:hover:bg-navy-700/20">
-                        <td className="px-5 py-4 font-semibold text-slate-900 dark:text-white">{u.username}</td>
+                        <td className="px-5 py-4 font-semibold text-slate-900 dark:text-white">{u.username || '—'}</td>
                         <td className="px-5 py-4 text-slate-600 dark:text-slate-300">{u.email}</td>
                         <td className="px-5 py-4 text-slate-600 dark:text-slate-300">{u.department || '—'}</td>
                         <td className="px-5 py-4">
